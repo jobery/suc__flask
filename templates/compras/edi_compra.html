@@ -19,16 +19,58 @@
                 {% endif %}
             {% endwith %}    
             <div class="card card-body">            
-                <form action="/compra/editar/{{ compra.0 }}" method="POST" autocomplete="on">
+                <form action="/compra/editar/{{ compra.0.0 }}" method="POST" autocomplete="on">
                     <div class="form-group">
-                        <input type="date" class="form-control" name="fecha" value="{{ compra.1|datetime }}" placeholder="Fecha" required>
+                        <input type="date" class="form-control" name="fecha" value="{{ compra.0.1 }}" placeholder="Fecha" required>
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" name="documento" value="{{ compra.3 }}" placeholder="Documento" required>
+                        <input type="text" class="form-control" name="documento" value="{{ compra.0.2 }}" placeholder="Documento" required>
                     </div>
                     <div class="form-group">
                         {{ dropdown('proveedor', proveedores,selected=[compra.3], extra=' id="proveedores" required ') }}
-                    </div>                                                                                  
+                    </div>  
+
+                    <!--  DETALLE ETIQUETAS -->
+                    <div class="form-row" id="detproduc0" >
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label for="Producto">Producto</label>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <label for="Cantidad">Cantidad</label>
+                            </div>
+                        </div>  
+                        <div class="col-3">
+                            <div class="form-group">
+                                <label for="Precio">Precio</label>
+                            </div>
+                        </div>                                               
+                    </div>
+
+                    {% for detalle in detallecompra %}
+
+                    <div class="form-row" id="detproduc{{loop.index}}" >
+                        <div class="col-6">
+                            <div class="form-group">
+                                {{ dropdown('producto' + loop.index|string , productos,selected=[detalle.2], extra=' required ') }}
+                            </div>                         
+                        </div>                        
+                        <div class="col-3">
+                            <div class="form-group">
+                                <input type="number" name="cantidad{{loop.index}}" class="form-control" value="{{ detalle.3 }}" placeholder="Cantidad" required>
+                            </div> 
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <input type="number" name="precio{{loop.index}}" class="form-control" value="{{ detalle.4 }}" placeholder="Precio" required>
+                            </div> 
+                        </div>                        
+                    </div>
+
+                    {% endfor %}                  
+                    
                     <button type="submit" id="sendlogin" class="btn btn-primary btn-block">Actualizar</button>
                 </form>
             </div> 

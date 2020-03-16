@@ -602,13 +602,14 @@ def compra_editar(id):
             proveedores = cursor.fetchall()
             cursor.execute("SELECT id, nombre FROM productos ;")
             productos = cursor.fetchall()
-            cursor = conn.cursor()
             cursor.execute("""SELECT TBL_A.id,TBL_A.fecha,TBL_A.documento,TBL_A.proveedor,TBL_B.nombre AS nombre_proveedor,TBL_A.total
             FROM compras AS TBL_A LEFT JOIN proveedores AS TBL_B ON TBL_A.proveedor = TBL_B.id  WHERE TBL_A.id = %s ;""",(id))
-            compra = cursor.fetchall()  
-            print(compra)          
+            compra = cursor.fetchall()
+            cursor.execute("SELECT id,compra, producto, cantidad, precio FROM detalle_compra WHERE compra = %s",(id))
+            detallecompra = cursor.fetchall()
+            print(detallecompra)
             if compra is not None:           
-                return render_template('compras/edi_compra.html',compra=compra,proveedores=proveedores,productos=productos)               
+                return render_template('compras/edi_compra.html',compra=compra,proveedores=proveedores,productos=productos,detallecompra=detallecompra)               
             else:
                 flash("Compra no existe")
                 return redirect(url_for('compras'))
