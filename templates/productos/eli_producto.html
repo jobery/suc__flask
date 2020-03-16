@@ -1,0 +1,20 @@
+{% extends 'plantillas/layout.html' %}
+{% block titulo %}Eliminar Producto{% endblock %}
+{% block cuerpo %}
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card-header">Eliminar Producto</div>
+            <div class="card card-body">
+                <form action="/producto/eliminar/{{ form.0 }}" method="post">                    
+                    <div class="form-group">
+                    <label for="confirmaeliminacion">¿ Esta Seguro de Eliminar el Producto {{ form.1 }} ?</label>
+                    </div>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                    <a class="btn btn-info" href="/productos">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'plantillas/layout.html' %}
+{% block titulo %}Editar Compra{% endblock %}
+{% from "plantillas/dropdown.html" import dropdown %}
+{% block cuerpo %}
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card-header">Modificar Compra</div>
+            {% with mensajes = get_flashed_messages() %}
+                {% if mensajes %}
+                    {% for mensaje in mensajes %}               
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ mensaje }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}    
+            <div class="card card-body">            
+                <form action="/compra/editar/{{ compra.0 }}" method="POST" autocomplete="on">
+                    <div class="form-group">
+                        <input type="date" class="form-control" name="fecha" value="{{ compra.1|datetime }}" placeholder="Fecha" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="documento" value="{{ compra.3 }}" placeholder="Documento" required>
+                    </div>
+                    <div class="form-group">
+                        {{ dropdown('proveedor', proveedores,selected=[compra.3], extra=' id="proveedores" required ') }}
+                    </div>                                                                                  
+                    <button type="submit" id="sendlogin" class="btn btn-primary btn-block">Actualizar</button>
+                </form>
+            </div> 
+        </div>        
+    </div>
+</div>
+{% endblock %}

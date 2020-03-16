@@ -1,0 +1,40 @@
+{% extends 'plantillas/layout.html' %}
+{% block titulo %}Accesos al Sistema{% endblock %}
+{% block cuerpo %}
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card-header">Modificar Usuario</div>
+        {% with mensajes = get_flashed_messages() %}
+            {% if mensajes %}
+                {% for mensaje in mensajes %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ mensaje }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>      
+                {% endfor %}
+            {% endif %}
+        {% endwith %}            
+            <div class="card">
+                <div class="card-body">
+                    <form action="/usuario" method="POST" autocomplete="on">
+                        <div class="form-group">
+                            <input type="email" class="form-control" name="correo" value="{{ form.email }}" disabled>
+                            <input type="email" class="form-control" name="email" value="{{ form.email }}" hidden>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="user" value="{{ form.nombre }}">
+                        </div>                        
+                        <div class="form-group">
+                            <input type="password" class="form-control" name="password" placeholder="Password">
+                        </div>
+                        <button type="submit" id="sendlogin" class="btn btn-primary btn-block">Actualizar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

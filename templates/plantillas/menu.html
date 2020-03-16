@@ -1,0 +1,52 @@
+{% if session.get('logged_in') == True %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">    
+    <a class="navbar-brand" href="/">Sucursal</a>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Archivo
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="/clientes">Clientes</a>
+              <a class="dropdown-item" href="/proveedores">Proveedores</a>
+              <a class="dropdown-item" href="/vendedores">Vendedores</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="/tiposproducto">Tipos de Productos</a>
+              <a class="dropdown-item" href="/productos">Productos</a>
+            </div>
+          </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Procesos
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item" href="/compras">Compras</a>
+            <a class="dropdown-item" href="#">Consignacion</a>
+            <a class="dropdown-item" href="#">Pagos</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#">Comisiones</a>
+          </div>
+        </li>
+        <li class="dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Reportes
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="#">Reporte de Consignaciones</a>
+              <a class="dropdown-item" href="#">Reporte de Pagos</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="#">Reporte de Comisiones</a>
+            </div>
+          </li>
+      </ul>
+      <a class="navbar-brand" href="/usuario">{{ session.get('nombre') }}</a>
+      <a class="navbar-brand" href="/salir">Salir</a>
+    </div>
+</nav>
+{% else %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="/login">Ingresar</a>    
+  <a class="navbar-brand" href="/signup">Registro</a>  
+</nav>  
+{% endif %}  

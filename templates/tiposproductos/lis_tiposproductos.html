@@ -1,0 +1,56 @@
+{% extends 'plantillas/layout.html' %}
+{% block titulo %}Tipos de Productos{% endblock %}
+{% block cuerpo %}
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card-header">Nuevo Tipo de Producto</div>
+            {% with mensajes = get_flashed_messages() %}
+                {% if mensajes %}
+                    {% for mensaje in mensajes %}               
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ mensaje }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}    
+            <div class="card card-body">            
+                <form action="/tipoproducto/agregar" method="POST" autocomplete="on">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="nombre" placeholder="Nombre" required>
+                    </div>                                                                     
+                    <button type="submit" id="sendlogin" class="btn btn-primary btn-block">Guardar</button>
+                </form>
+            </div> 
+        </div>
+        <div class="col-md-7">
+            <table class="table table-striped table-boardered table-sm">
+                <thead>
+                    <tr>
+                        <td>Id</td>
+                        <td>Nombre</td>                        
+                        <td>Operaciones</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if form %}
+                        {% for tipoproducto in form %}
+                            <tr>
+                                <td>{{ tipoproducto.0 }}</td>
+                                <td>{{ tipoproducto.1 }}</td>                           
+                                <td>
+                                    <a href="/tipoproducto/editar/{{ tipoproducto.0 }}" class="btn btn-warning">Editar</a>
+                                    <a href="/tipoproducto/eliminar/{{ tipoproducto.0 }}" class="btn btn-danger btn-delete">Eliminar</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
