@@ -49,6 +49,10 @@
                         </div>                                               
                     </div>
 
+                    <div class="form-group" hidden>
+                        <input type="number" name="numdet" class="form-control" value="{{ detallecompra|length }}" hidden>
+                    </div>
+
                     {% for detalle in detallecompra %}
 
                     <div class="form-row" id="detproduc{{loop.index}}" >
@@ -64,10 +68,13 @@
                         </div>
                         <div class="col-3">
                             <div class="form-group">
-                                <input type="number" name="precio{{loop.index}}" class="form-control" value="{{ detalle.4 }}" placeholder="Precio" required>
+                                <input type="number" step="any" name="precio{{loop.index}}" class="form-control" value="{{ detalle.4 }}" placeholder="Precio" required>
                             </div> 
-                        </div>                        
+                        </div>                                                
                     </div>
+                    <div class="form-group" hidden>
+                        <input type="number" name="id{{loop.index}}" class="form-control" value="{{ detalle.0 }}" hidden>
+                    </div> 
 
                     {% endfor %}                  
                     

@@ -551,6 +551,7 @@ def compra_agregar():
             fecha = request.form['fecha']
             documento = request.form['documento']
             proveedor = request.form['proveedor']
+            numdet = int(request.form['numdet'])
             cursor = conn.cursor()
             cursor.execute("SELECT id FROM compras WHERE fecha = %s and documento = %s and proveedor = %s ",(fecha,documento,proveedor))            
             compra = cursor.fetchone()
@@ -565,14 +566,14 @@ def compra_agregar():
                 if compra is not None:
                     idcompra = compra[0]
                     for i in range(1,6):
-                        print('producto' + str(i))
-                        producto = request.form['producto' + str(i)]
-                        cantidad = request.form['cantidad' + str(i)]
-                        precio = request.form['precio' + str(i)]
-                        if producto != '' and float(cantidad) > 0 and float(precio) > 0.00:
-                            cursor.execute("""INSERT INTO detalle_compra(compra, producto, cantidad, precio, reg_ing)""" 
-                            + """VALUES (%s, %s, %s, %s, NOW())""",(idcompra,producto,cantidad,precio))
-                            conn.commit()
+                        if i <= numdet:                        
+                            producto = request.form['producto' + str(i)]
+                            cantidad = request.form['cantidad' + str(i)]
+                            precio = request.form['precio' + str(i)]
+                            if producto != '' and float(cantidad) > 0 and float(precio) > 0.00:
+                                cursor.execute("""INSERT INTO detalle_compra(compra, producto, cantidad, precio, reg_ing)""" 
+                                + """VALUES (%s, %s, %s, %s, NOW())""",(idcompra,producto,cantidad,precio))
+                                conn.commit()
                 flash("Registro Guardado con Exito")
             else:
                 flash("Compra ya existe")
@@ -594,6 +595,18 @@ def compra_editar(id):
 		    fecha= %s,documento=%s,proveedor=%s,reg_mod=NOW()
 	        WHERE id = %s """,(fecha,documento,proveedor,id))
             conn.commit()
+            idcompra = id
+            numdet = int(request.form['numdet'])
+            for i in range(1,6):
+               if i <= numdet:
+                    iddet = request.form['id' + str(i)] 
+                    producto = request.form['producto' + str(i)]
+                    cantidad = request.form['cantidad' + str(i)]
+                    precio = request.form['precio' + str(i)]
+                    if iddet != '' and producto != '' and float(cantidad) > 0 and float(precio) > 0.00:
+                        cursor.execute("""UPDATE detalle_compra SET producto = %s,cantidad = %s,precio = %s,reg_mod = NOW() """ 
+                        + """ WHERE id = %s AND compra = %s ;""",(producto,cantidad,precio,int(iddet),idcompra))
+                        conn.commit()            
             flash("Registro Actualiazado con Exito")
             return redirect(url_for('compras'))
         else:
@@ -606,13 +619,33 @@ def compra_editar(id):
             FROM compras AS TBL_A LEFT JOIN proveedores AS TBL_B ON TBL_A.proveedor = TBL_B.id  WHERE TBL_A.id = %s ;""",(id))
             compra = cursor.fetchall()
             cursor.execute("SELECT id,compra, producto, cantidad, precio FROM detalle_compra WHERE compra = %s",(id))
-            detallecompra = cursor.fetchall()
-            print(detallecompra)
+            detallecompra = cursor.fetchall()            
             if compra is not None:           
                 return render_template('compras/edi_compra.html',compra=compra,proveedores=proveedores,productos=productos,detallecompra=detallecompra)               
             else:
                 flash("Compra no existe")
                 return redirect(url_for('compras'))
+
+@app.route('/compra/eliminar/<int:id>',methods=['POST','GET'])
+def compra_eliminar(id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        cursor = conn.cursor()
+        if request.method == 'POST':
+            cursor.execute("DELETE FROM compras WHERE id = %s ",(id))            
+            cursor.execute("DELETE FROM detalle_compra WHERE compra = %s",(id)) 
+            conn.commit()       
+            flash("Registro Eliminado con Exito")
+            return redirect(url_for('compras'))
+        else:
+            cursor.execute("SELECT id,documento,fecha FROM compras WHERE id = %s ",(id))
+            compra = cursor.fetchone()            
+            if compra is not None:
+                return render_template('compras/eli_compra.html',form=compra)
+            else:
+                flash("proveedor no existe")
+                return redirect(url_for('compras'))                
 ###------------------------------------------FIN COMPRAS --------------------------------------------------###
 
 if __name__ == '__main__':
