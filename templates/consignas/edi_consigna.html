@@ -1,0 +1,81 @@
+{% extends 'plantillas/layout.html' %}
+{% block titulo %}Editar Consigna{% endblock %}
+{% from "plantillas/dropdown.html" import dropdown %}
+{% block cuerpo %}
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card-header">Modificar Consigna</div>
+            {% with mensajes = get_flashed_messages() %}
+                {% if mensajes %}
+                    {% for mensaje in mensajes %}               
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ mensaje }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}    
+            <div class="card card-body">            
+                <form action="/consigna/editar/{{ consigna.0.0 }}" method="POST" autocomplete="on">
+                    <div class="form-group">
+                        <input type="date" class="form-control" name="fecha" value="{{ consigna.0.1 }}" placeholder="Fecha" required>
+                    </div>
+                    <div class="form-group">
+                        {{ dropdown('vendedor', vendedores,selected=[consigna.0.2], extra=' id="vendedores" required ') }}
+                    </div>  
+
+                    <!--  DETALLE ETIQUETAS -->
+                    <div class="form-row" id="detproduc0" >
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label for="Producto">Producto</label>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <label for="Cantidad">Cantidad</label>
+                            </div>
+                        </div>  
+                        <div class="col-3">
+                            <div class="form-group">
+                                <label for="Cantidad">Tarjeta</label>
+                            </div>
+                        </div>                                                                    
+                    </div>
+
+                    <div class="form-group" hidden>
+                        <input type="number" name="numdet" class="form-control" value="{{ detalleconsigna|length }}" hidden>
+                    </div>
+
+                    {% for detalle in detalleconsigna %}
+
+                    <div class="form-row" id="detproduc{{loop.index}}" >
+                        <div class="col-6">
+                            <div class="form-group">
+                                {{ dropdown('producto' + loop.index|string , productos,selected=[detalle.2], extra=' required ') }}
+                            </div>                         
+                        </div>                        
+                        <div class="col-3">
+                            <div class="form-group">
+                                <input type="number" name="cantidad{{loop.index}}" class="form-control" value="{{ detalle.3 }}" placeholder="Cantidad" required>
+                            </div> 
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <input type="number" name="id{{loop.index}}" class="form-control" value="{{ detalle.0 }}" readonly>
+                            </div> 
+                        </div>                                                                   
+                    </div>
+
+                    {% endfor %}                  
+                    
+                    <button type="submit" id="sendlogin" class="btn btn-primary btn-block">Actualizar</button>
+                </form>
+            </div> 
+        </div>        
+    </div>
+</div>
+{% endblock %}

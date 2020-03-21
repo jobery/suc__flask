@@ -1,0 +1,102 @@
+{% extends 'plantillas/layout.html' %}
+{% block titulo %}Consignas{% endblock %}
+{% from "plantillas/dropdown.html" import dropdown %}
+{% block cuerpo %}
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card-header">Nuevo Consigna</div>
+            {% with mensajes = get_flashed_messages() %}
+                {% if mensajes %}
+                    {% for mensaje in mensajes %}               
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ mensaje }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}    
+            <div class="card card-body">            
+                <form id="form" action="/consigna/agregar" method="POST" autocomplete="on">
+                    <div class="form-group">
+                        <input type="date" class="form-control" name="fecha" placeholder="Fecha" required>
+                    </div>
+                    <div class="form-group">
+                        {{ dropdown('vendedor', vendedores, extra=' id="vendedores" required ') }}
+                    </div>
+                    
+                    <!-- <div class="form-group">
+                        <button type="button" id="btn_agr_det_com" class="btn btn-success btn-block">Agrear Producto</button>
+                    </div> -->
+
+                    <!--  DETALLE #1  -->
+                    <div class="form-row" id="detproduc0" >
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label for="Producto">Producto</label>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <label for="Cantidad">Cantidad</label>
+                            </div>
+                        </div>                                            
+                    </div>
+
+                    {% for i in range(1,6) %}
+                        <div class="form-row" id="detproduc{{loop.index}}" >
+                            <div class="col-6">
+                                <div class="form-group">
+                                    {{ dropdown('producto' + loop.index|string , productos, extra='') }}
+                                </div>                         
+                            </div>                        
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <input type="number" name="cantidad{{loop.index}}" class="form-control" placeholder="Cantidad" >
+                                </div> 
+                            </div>           
+                        </div>
+                    {% endfor %}
+      
+                    <button type="submit" id="sendlogin" class="btn btn-primary btn-block">Guardar</button>
+                                        
+                </form>
+            </div> 
+        </div>
+        <div class="col-md-7">
+            <table class="table table-striped table-boardered table-sm">
+                <thead>
+                    <tr>
+                        <td>Id</td>
+                        <td>Fecha</td>                        
+                        <td>Vendedor</td>
+                        <td>Total</td> 
+                        <td>Procesada</td>                        
+                        <td>Operaciones</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if consignas %}
+                        {% for consigna in consignas %}
+                            <tr>
+                                <td>{{ consigna.0 }}</td>
+                                <td>{{ consigna.1 }}</td>
+                                <td>{{ consigna.3 }}</td>
+                                <td>{{ consigna.4 }}</td>  
+                                <td>{{ consigna.5 }}</td>                              
+                                <td>
+                                    <a href="/consigna/editar/{{ consigna.0 }}" class="btn btn-warning">Editar</a>
+                                    <a href="/consigna/eliminar/{{ consigna.0 }}" class="btn btn-danger btn-delete">Eliminar</a>
+                                    <a href="/consigna/procesar/{{ consigna.0 }}" class="btn btn-info">Procesar</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -551,7 +551,6 @@ def compra_agregar():
             fecha = request.form['fecha']
             documento = request.form['documento']
             proveedor = request.form['proveedor']
-            numdet = int(request.form['numdet'])
             cursor = conn.cursor()
             cursor.execute("SELECT id FROM compras WHERE fecha = %s and documento = %s and proveedor = %s ",(fecha,documento,proveedor))            
             compra = cursor.fetchone()
@@ -565,15 +564,14 @@ def compra_agregar():
                 compra = cursor.fetchone()                
                 if compra is not None:
                     idcompra = compra[0]
-                    for i in range(1,6):
-                        if i <= numdet:                        
-                            producto = request.form['producto' + str(i)]
-                            cantidad = request.form['cantidad' + str(i)]
-                            precio = request.form['precio' + str(i)]
-                            if producto != '' and float(cantidad) > 0 and float(precio) > 0.00:
-                                cursor.execute("""INSERT INTO detalle_compra(compra, producto, cantidad, precio, reg_ing)""" 
-                                + """VALUES (%s, %s, %s, %s, NOW())""",(idcompra,producto,cantidad,precio))
-                                conn.commit()
+                    for i in range(1,6):                                               
+                        producto = request.form['producto' + str(i)]
+                        cantidad = request.form['cantidad' + str(i)]
+                        precio = request.form['precio' + str(i)]
+                        if producto != '' and float(cantidad) > 0 and float(precio) > 0.00:
+                            cursor.execute("""INSERT INTO detalle_compra(compra, producto, cantidad, precio, reg_ing)""" 
+                            + """VALUES (%s, %s, %s, %s, NOW())""",(idcompra,producto,cantidad,precio))
+                            conn.commit()
                 flash("Registro Guardado con Exito")
             else:
                 flash("Compra ya existe")
@@ -647,6 +645,161 @@ def compra_eliminar(id):
                 flash("proveedor no existe")
                 return redirect(url_for('compras'))                
 ###------------------------------------------FIN COMPRAS --------------------------------------------------###
+###------------------------------------------INI CONSIGNAS ------------------------------------------------###
+@app.route('/consignas')
+def consignas():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, nombre FROM vendedores ;")
+        vendedores = cursor.fetchall()
+        cursor.execute("SELECT id, nombre FROM productos ;")
+        productos = cursor.fetchall()
+        cursor = conn.cursor()
+        cursor.execute("""SELECT TBL_A.id,TBL_A.fecha,TBL_A.vendedor,TBL_B.nombre AS nombre_vendedor,TBL_A.total
+	    ,IF(TBL_A.procesado=1,'SI','NO') AS procesado FROM consignas AS TBL_A LEFT JOIN vendedores AS TBL_B ON TBL_A.vendedor = TBL_B.id ;""")
+        consignas = cursor.fetchall()
+        return render_template('consignas/lis_consignas.html',consignas=consignas,vendedores=vendedores,productos=productos)
+
+@app.route('/consigna/agregar',methods=['POST'])    
+def consigna_agregar():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        if request.method == 'POST':
+            fecha = request.form['fecha']
+            vendedor = request.form['vendedor']
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM consignas WHERE fecha = %s and vendedor = %s ",(fecha,vendedor))            
+            compra = cursor.fetchone()
+            if compra == None:           
+                               
+                cursor.execute("""INSERT INTO consignas(fecha, vendedor, reg_ing)""" 
+	            + """VALUES (%s, %s, NOW())""",(fecha,vendedor))
+                conn.commit()
+
+                cursor.execute("SELECT id FROM consignas WHERE fecha = %s and vendedor = %s ",(fecha,vendedor))           
+                consigna = cursor.fetchone()                
+                if consigna is not None:
+                    idconsigna = consigna[0]
+                    for i in range(1,6):                                               
+                        producto = request.form['producto' + str(i)]
+                        cantidad = request.form['cantidad' + str(i)]
+                        if producto != '' and float(cantidad) > 0:
+                            cursor.execute("""INSERT INTO detalle_consigna(consigna, producto, cantidad, reg_ing)""" 
+                            + """VALUES (%s, %s, %s, NOW())""",(idconsigna,producto,cantidad))
+                            conn.commit()
+                flash("Registro Guardado con Exito")
+            else:
+                flash("Consigna ya existe")
+                return redirect(url_for('consignas')) 
+            return redirect(url_for('consignas')) 
+
+@app.route('/consigna/editar/<int:id>',methods=['POST','GET'])
+def consigna_editar(id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        cursor = conn.cursor()
+        if request.method == 'POST':
+            fecha = request.form['fecha']
+            proveedor = request.form['vendedor']
+            cursor = conn.cursor()           
+            cursor.execute("""	UPDATE consignas SET
+		    fecha= %s,vendedor=%s,reg_mod=NOW()
+	        WHERE id = %s """,(fecha,proveedor,id))
+            conn.commit()
+            idconsigna = id
+            numdet = int(request.form['numdet'])
+            for i in range(1,6):
+               if i <= numdet:
+                    iddet = request.form['id' + str(i)] 
+                    producto = request.form['producto' + str(i)]
+                    cantidad = request.form['cantidad' + str(i)]
+                    if iddet != '' and producto != '' and float(cantidad) > 0:
+                        cursor.execute("""UPDATE detalle_consigna SET producto = %s,cantidad = %s,reg_mod = NOW() """ 
+                        + """ WHERE id = %s AND consigna = %s ;""",(producto,cantidad,int(iddet),idconsigna))
+                        conn.commit()            
+            flash("Registro Actualiazado con Exito")
+            return redirect(url_for('consignas'))
+        else:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, nombre FROM vendedores ;")
+            vendedores = cursor.fetchall()
+            cursor.execute("SELECT id, nombre FROM productos ;")
+            productos = cursor.fetchall()
+            cursor.execute("""SELECT TBL_A.id,TBL_A.fecha,TBL_A.vendedor,TBL_B.nombre AS nombre_vendedor,TBL_A.total
+            ,IF(TBL_A.procesado=1,'SI','NO') AS procesado FROM consignas AS TBL_A LEFT JOIN vendedores AS TBL_B ON TBL_A.vendedor = TBL_B.id  WHERE TBL_A.id = %s ;""",(id))
+            consigna = cursor.fetchall()
+            cursor.execute("SELECT id,consigna, producto, cantidad FROM detalle_consigna WHERE consigna = %s",(id))
+            detalleconsigna = cursor.fetchall()            
+            if consigna is not None:           
+                return render_template('consignas/edi_consigna.html',consigna=consigna,vendedores=vendedores,productos=productos,detalleconsigna=detalleconsigna)               
+            else:
+                flash("Consigna no existe")
+                return redirect(url_for('consignas'))
+
+@app.route('/consigna/eliminar/<int:id>',methods=['POST','GET'])
+def consigna_eliminar(id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        cursor = conn.cursor()
+        if request.method == 'POST':
+            cursor.execute("DELETE FROM consignas WHERE id = %s ",(id))            
+            cursor.execute("DELETE FROM detalle_consigna WHERE consigna = %s",(id)) 
+            conn.commit()       
+            flash("Registro Eliminado con Exito")
+            return redirect(url_for('consignas'))
+        else:
+            cursor.execute("SELECT id,fecha,vendedor FROM consignas WHERE id = %s ",(id))
+            consigna = cursor.fetchone()            
+            if consigna is not None:
+                return render_template('consignas/eli_consigna.html',form=consigna)
+            else:
+                flash("Consigna no existe")
+                return redirect(url_for('consignas')) 
+
+@app.route('/consigna/procesar/<int:id>',methods=['POST','GET'])
+def consigna_procesar(id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        cursor = conn.cursor()
+        if request.method == 'POST':
+            cursor = conn.cursor()           
+            cursor.execute("""	UPDATE consignas SET procesado = 1,reg_pro = NOW() WHERE id = %s """,(id))
+            conn.commit()
+            idconsigna = id
+            numdet = int(request.form['numdet'])
+            for i in range(1,6):
+               if i <= numdet:
+                    iddet = request.form['id' + str(i)] 
+                    devolucion = request.form['devolucion' + str(i)]
+                    if iddet != '' and float(devolucion) > 0:
+                        cursor.execute("""UPDATE detalle_consigna SET devolucion = %s,reg_dev = NOW() """ 
+                        + """ WHERE id = %s AND consigna = %s ;""",(devolucion,int(iddet),idconsigna))
+                        conn.commit()            
+            flash("Registro Procesado con Exito")
+            return redirect(url_for('consignas'))
+        else:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, nombre FROM vendedores ;")
+            vendedores = cursor.fetchall()
+            cursor.execute("SELECT id, nombre FROM productos ;")
+            productos = cursor.fetchall()
+            cursor.execute("""SELECT TBL_A.id,TBL_A.fecha,TBL_A.vendedor,TBL_B.nombre AS nombre_vendedor,TBL_A.total
+            ,IF(TBL_A.procesado=1,'SI','NO') AS procesado FROM consignas AS TBL_A LEFT JOIN vendedores AS TBL_B ON TBL_A.vendedor = TBL_B.id  WHERE TBL_A.id = %s ;""",(id))
+            consigna = cursor.fetchall()
+            cursor.execute("SELECT id,consigna, producto, cantidad,devolucion FROM detalle_consigna WHERE consigna = %s",(id))
+            detalleconsigna = cursor.fetchall()            
+            if consigna is not None:           
+                return render_template('consignas/pro_consigna.html',consigna=consigna,vendedores=vendedores,productos=productos,detalleconsigna=detalleconsigna)               
+            else:
+                flash("Consigna no existe")
+                return redirect(url_for('consignas'))
+###------------------------------------------FIN CONSIGNAS ------------------------------------------------###
 
 if __name__ == '__main__':
     app.run(port=3000,debug=True)
