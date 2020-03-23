@@ -392,11 +392,9 @@ def producto_agregar():
                 conn.commit()
                 cursor.execute(""" SELECT id FROM productos WHERE nombre = %s and tipo = %s 
                 AND costo = %s AND precio = %s ;""",(nombre,tipo,costo,precio))           
-                producto = cursor.fetchone() 
-                print(producto)               
+                producto = cursor.fetchone()             
                 if producto is not None:
                     idproducto = producto[0]
-                    print(idproducto)
                     for i in range(1,6):                                               
                         forma = request.form['tipoPrecio' + str(i)]
                         precio = request.form['precio' + str(i)]
@@ -419,10 +417,29 @@ def producto_editar(id):
             nombre = request.form['nombre']            
             tipo = request.form['tipo']  
             costo = request.form['costo']
-            precio = request.form['precio']    
+            precio = request.form['precio']
+            numdet = int(request.form['numdet'])    
             cursor.execute("""	UPDATE productos SET nombre= %s,tipo=%s,costo=%s,precio=%s,reg_mod=NOW()
 	        WHERE id = %s """,(nombre,tipo,costo,precio,id))
             conn.commit()
+            idproducto = id            
+            for i in range(1,6):
+                #if i <= numdet:
+                iddet = request.form['id' + str(i)]                                                
+                forma = request.form['tipoPrecio' + str(i)]
+                precio = request.form['precio' + str(i)]
+                prima = request.form['prima' + str(i)]
+                print("iddet"+str(i)+" :")
+                print(iddet)
+                if iddet != '' and forma != '' and float(precio) >= 0 and float(prima) >= 0:
+                    cursor.execute("""UPDATE precios_producto SET forma = %s,precio = %s, prima = %s""" 
+                    + """ ,reg_mod = NOW() WHERE id = %s AND producto = %s ;  """,(forma,precio,prima,iddet,idproducto))                            
+                    conn.commit()
+                else:
+                    if iddet == '' and forma != '' and float(precio) >= 0 and float(prima) >= 0:
+                        cursor.execute("""INSERT INTO precios_producto(producto, forma, precio, prima, reg_ing)""" 
+                        + """VALUES (%s, %s, %s, %s, NOW())""",(idproducto,forma,precio,prima))                            
+                        conn.commit()
             flash("Registro Actualiazado con Exito")
             return redirect(url_for('productos'))
         else:
@@ -435,9 +452,9 @@ def producto_editar(id):
             cursor.execute(""" SELECT tbl_a.id,tbl_a.producto,tbl_a.forma,tbl_b.nombre,tbl_a.precio,tbl_a.prima 
             FROM precios_producto AS tbl_a LEFT JOIN formas_pago AS tbl_b ON tbl_a.forma = tbl_b.id
             WHERE tbl_a.producto = %s ; """,(id))
-            precios = cursor.fetchall()
+            detalleprecios = cursor.fetchall()
             if producto is not None:           
-                return render_template('productos/edi_producto.html',producto=producto,tipos=tipos,formas=formas,precios=precios)               
+                return render_template('productos/edi_producto.html',producto=producto,tipos=tipos,formas=formas,detalleprecios=detalleprecios)               
             else:
                 flash("Producto no existe")
                 return redirect(url_for('productos'))  
@@ -450,7 +467,8 @@ def producto_eliminar(id):
     else:
         cursor = conn.cursor()
         if request.method == 'POST':
-            cursor.execute("DELETE FROM productos WHERE id=%s ",(id))
+            cursor.execute("DELETE FROM productos WHERE id = %s ;",(id))
+            cursor.execute("DELETE FROM precios_producto WHERE producto = %s ;",(id))
             conn.commit()        
             flash("Registro Eliminado con Exito")
             return redirect(url_for('productos'))

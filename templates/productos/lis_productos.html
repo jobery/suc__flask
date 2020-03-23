@@ -32,21 +32,39 @@
                     <div class="form-group">
                         <input type="number" class="form-control" name="precio" placeholder="Precio Contado" required>
                     </div>
+                    <!--  DETALLE ETIQUETAS -->
+                    <div class="form-row" id="detproduc0" >
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label for="Producto">Tipo de Precio</label>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <label for="Cantidad">Precio</label>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <label for="Cantidad">Prima</label>
+                            </div>
+                        </div>                                                                                                
+                    </div>                    
                     {% for i in range(1,6) %}
                         <div class="form-row" id="detprecio{{loop.index}}" >
                             <div class="col-6">
                                 <div class="form-group">
-                                    {{ dropdown('tipoPrecio' + loop.index|string , formas, extra='') }}
+                                    {{ dropdown('tipoPrecio' + loop.index|string , formas, extra=' required ') }}
                                 </div>                         
                             </div>
                             <div class="col-3">
                                 <div class="form-group">
-                                    <input type="number" step="any" name="precio{{loop.index}}" class="form-control" placeholder="Precio" >
+                                    <input type="number" step="any" name="precio{{loop.index}}" class="form-control" placeholder="Precio"required >
                                 </div> 
                             </div>                                                     
                             <div class="col-3">
                                 <div class="form-group">
-                                    <input type="number" step="any" name="prima{{loop.index}}" class="form-control" placeholder="Prima" >
+                                    <input type="number" step="any" name="prima{{loop.index}}" class="form-control" placeholder="Prima" required>
                                 </div> 
                             </div>           
                         </div>

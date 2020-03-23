@@ -31,7 +31,79 @@
                     </div>
                     <div class="form-group">
                         <input type="number" class="form-control" name="precio"value="{{ producto.4 }}" placeholder="Precio" required>
-                    </div>                                                                                   
+                    </div>
+
+                    <div class="form-group" hidden>
+                        <input type="number" name="numdet" class="form-control" value="{{ detalleprecios|length }}" hidden>
+                    </div>                    
+                    <!--  DETALLE ETIQUETAS -->
+                    <div class="form-row" id="detproduc0" >
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label for="Producto">Tipo de Precio</label>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <label for="Cantidad">Precio</label>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <label for="Cantidad">Prima</label>
+                            </div>
+                        </div>                                                                                                
+                    </div> 
+                    {% for detalle in detalleprecios %}
+                        <div class="form-row" id="detproduc{{loop.index}}" >
+                            <div class="col-6">
+                                <div class="form-group">
+                                    {{ dropdown('tipoPrecio' + loop.index|string , formas,selected=[detalle.2], extra=' required ') }}
+                                </div>                         
+                            </div>                        
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <input type="number" step="any" name="precio{{loop.index}}" class="form-control" value="{{ detalle.4 }}" placeholder="Precio" >
+                                </div> 
+                            </div>                                                     
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <input type="number" step="any" name="prima{{loop.index}}" class="form-control" value="{{ detalle.5 }}" placeholder="Prima" >
+                                </div> 
+                            </div> 
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <input type="number" name="id{{loop.index}}" class="form-control" value="{{ detalle.0 }}" hidden>
+                                </div> 
+                            </div>                                                                   
+                        </div>
+                    {% endfor %} 
+                    {% if detalleprecios|length < 5 %}
+                        {% for i in range(1+detalleprecios|length,6) %}
+                            <div class="form-row" id="detprecio{{loop.index}}" >
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        {{ dropdown('tipoPrecio' + i|string , formas, extra='  ') }}
+                                    </div>                         
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <input type="number" step="any" name="precio{{i}}" class="form-control" placeholder="Precio"  >
+                                    </div> 
+                                </div>                                                     
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <input type="number" step="any" name="prima{{i}}" class="form-control" placeholder="Prima" >
+                                    </div> 
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <input type="number" name="id{{i}}" class="form-control" value="TMP" hidden>
+                                    </div> 
+                                </div>                                            
+                            </div>                                
+                        {% endfor %} 
+                    {% endif  %}                                                                                                     
                     <button type="submit" id="sendlogin" class="btn btn-primary btn-block">Actualizar</button>
                 </form>
             </div> 
