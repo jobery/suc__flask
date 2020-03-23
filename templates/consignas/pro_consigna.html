@@ -35,13 +35,13 @@
                             </div>
                         </div>
                         <div class="col-3">
-                            <div class="form-group">
-                                <label for="Cantidad">Devolucion</label>
+                            <div class="form-group">                                
+                                <label for="Cantidad">Cantidad</label>
                             </div>
                         </div>  
                         <div class="col-3">
                             <div class="form-group">
-                                <label for="Tarjeta">Tarjeta</label>
+                                <label for="Cantidad">Devolucion</label>
                             </div>
                         </div>                                                                    
                     </div>
@@ -60,15 +60,19 @@
                         </div>                        
                         <div class="col-3">
                             <div class="form-group">
-                                <input type="number" name="devolucion{{loop.index}}" class="form-control" value="{{ detalle.4 }}" placeholder="Devolucion" min="0" max="{{ detalle.3 }}" required>
+                                <input type="number" name="cantidad{{loop.index}}" class="form-control" value="{{ detalle.3 }}" placeholder="Cantidad" min="0" max="{{ detalle.3 }}" readonly>
                             </div> 
                         </div>
                         <div class="col-3">
                             <div class="form-group">
-                                <input type="number" name="id{{loop.index}}" class="form-control" value="{{ detalle.0 }}" readonly>
+                                <input type="number" name="devolucion{{loop.index}}" class="form-control" value="{{ detalle.4 }}" placeholder="Devolucion" min="0" max="{{ detalle.3 }}" required>
                             </div> 
                         </div>                                                                   
                     </div>
+
+                    <div class="form-group">
+                        <input type="number" name="id{{loop.index}}" class="form-control" value="{{ detalle.0 }}" hidden>
+                    </div> 
 
                     {% endfor %}                  
                     

@@ -87,9 +87,14 @@
                                 <td>{{ consigna.4 }}</td>  
                                 <td>{{ consigna.5 }}</td>                              
                                 <td>
-                                    <a href="/consigna/editar/{{ consigna.0 }}" class="btn btn-warning">Editar</a>
-                                    <a href="/consigna/eliminar/{{ consigna.0 }}" class="btn btn-danger btn-delete">Eliminar</a>
-                                    <a href="/consigna/procesar/{{ consigna.0 }}" class="btn btn-info">Procesar</a>
+                                    {% if consigna.5 == 'NO' %}
+                                        <a href="/consigna/editar/{{ consigna.0 }}" class="btn btn-warning">Editar</a>                                    
+                                        <a href="/consigna/procesar/{{ consigna.0 }}" class="btn btn-info">Procesar</a>
+                                        <a href="/consigna/eliminar/{{ consigna.0 }}" class="btn btn-danger btn-delete">Eliminar</a>
+                                    {% else %}
+                                        <a href="/consigna/procesar/{{ consigna.0 }}" class="btn btn-info">Procesar</a>
+                                        <a href="/consigna/eliminar/{{ consigna.0 }}" class="btn btn-danger btn-delete">Eliminar</a>
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}

@@ -38,12 +38,7 @@
                             <div class="form-group">
                                 <label for="Cantidad">Cantidad</label>
                             </div>
-                        </div>  
-                        <div class="col-3">
-                            <div class="form-group">
-                                <label for="Cantidad">Tarjeta</label>
-                            </div>
-                        </div>                                                                    
+                        </div>                                                                      
                     </div>
 
                     <div class="form-group" hidden>
@@ -65,7 +60,7 @@
                         </div>
                         <div class="col-3">
                             <div class="form-group">
-                                <input type="number" name="id{{loop.index}}" class="form-control" value="{{ detalle.0 }}" readonly>
+                                <input type="number" name="id{{loop.index}}" class="form-control" value="{{ detalle.0 }}" hidden>
                             </div> 
                         </div>                                                                   
                     </div>

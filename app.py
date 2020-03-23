@@ -688,7 +688,7 @@ def consigna_agregar():
                         cantidad = request.form['cantidad' + str(i)]
                         if producto != '' and float(cantidad) > 0:
                             cursor.execute("""INSERT INTO detalle_consigna(consigna, producto, cantidad, reg_ing)""" 
-                            + """VALUES (%s, %s, %s, NOW())""",(idconsigna,producto,cantidad))
+                            + """VALUES (%s, %s, %s, NOW())""",(idconsigna,producto,cantidad))                            
                             conn.commit()
                 flash("Registro Guardado con Exito")
             else:
@@ -718,9 +718,9 @@ def consigna_editar(id):
                     producto = request.form['producto' + str(i)]
                     cantidad = request.form['cantidad' + str(i)]
                     if iddet != '' and producto != '' and float(cantidad) > 0:
-                        cursor.execute("""UPDATE detalle_consigna SET producto = %s,cantidad = %s,reg_mod = NOW() """ 
-                        + """ WHERE id = %s AND consigna = %s ;""",(producto,cantidad,int(iddet),idconsigna))
-                        conn.commit()            
+                        cursor.execute("""UPDATE detalle_consigna AS tbl_a SET tbl_a.producto = %s,tbl_a.cantidad = %s,tbl_a.reg_mod = NOW() """ 
+                        + """ WHERE tbl_a.id = %s AND tbl_a.consigna = %s ;""",(producto,cantidad,int(iddet),idconsigna))                        
+                        conn.commit()                                 
             flash("Registro Actualiazado con Exito")
             return redirect(url_for('consignas'))
         else:
@@ -777,7 +777,7 @@ def consigna_procesar(id):
                if i <= numdet:
                     iddet = request.form['id' + str(i)] 
                     devolucion = request.form['devolucion' + str(i)]
-                    if iddet != '' and float(devolucion) > 0:
+                    if iddet != '' and float(devolucion) >= 0:
                         cursor.execute("""UPDATE detalle_consigna SET devolucion = %s,reg_dev = NOW() """ 
                         + """ WHERE id = %s AND consigna = %s ;""",(devolucion,int(iddet),idconsigna))
                         conn.commit()            
