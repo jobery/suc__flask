@@ -418,7 +418,7 @@ def producto_editar(id):
             tipo = request.form['tipo']  
             costo = request.form['costo']
             precio = request.form['precio']
-            numdet = int(request.form['numdet'])    
+            #numdet = int(request.form['numdet'])    
             cursor.execute("""	UPDATE productos SET nombre= %s,tipo=%s,costo=%s,precio=%s,reg_mod=NOW()
 	        WHERE id = %s """,(nombre,tipo,costo,precio,id))
             conn.commit()
@@ -429,8 +429,6 @@ def producto_editar(id):
                 forma = request.form['tipoPrecio' + str(i)]
                 precio = request.form['precio' + str(i)]
                 prima = request.form['prima' + str(i)]
-                print("iddet"+str(i)+" :")
-                print(iddet)
                 if iddet != '' and forma != '' and float(precio) >= 0 and float(prima) >= 0:
                     cursor.execute("""UPDATE precios_producto SET forma = %s,precio = %s, prima = %s""" 
                     + """ ,reg_mod = NOW() WHERE id = %s AND producto = %s ;  """,(forma,precio,prima,iddet,idproducto))                            
