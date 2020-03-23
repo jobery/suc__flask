@@ -26,6 +26,7 @@ def format_datetime(value,format='%Y-%m-%d'):
 
 app.jinja_env.filters['datetime'] = format_datetime   
 
+###-------------------------------------------------------- INI USUARIO -------------------------------------------------------------###
 @app.route('/signup',methods=['POST','GET'])
 def SignUp():
     if request.method == 'POST':
@@ -105,7 +106,7 @@ def cerrar():
     session['email'] =  ''     
     return redirect(url_for('inicio'))
 
-
+###-------------------------------------------------------- FIN USUARIO -------------------------------------------------------------###
 ###--------------------------------------INICIO CLIENTES -------------------------------------------------###
 @app.route('/clientes')
 def clientes():
@@ -360,11 +361,13 @@ def productos():
         cursor = conn.cursor()
         cursor.execute("SELECT id, nombre FROM tipos_producto ;")
         tipos = cursor.fetchall()
+        cursor.execute("SELECT id, nombre FROM formas_pago ;")
+        formas = cursor.fetchall()
         cursor.execute(""" SELECT productos.id,productos.nombre,productos.tipo,tipos_producto.nombre AS nombre_tipo """ 
         + """ ,productos.costo,productos.precio,productos.existencia FROM productos LEFT JOIN tipos_producto """
-        + """ ON productos.tipo = tipos_producto.id ;""")
+        + """ ON productos.tipo = tipos_producto.id ORDER BY productos.id ;""")
         productos = cursor.fetchall()
-        return render_template('productos/lis_productos.html',productos=productos,tipos=tipos) 
+        return render_template('productos/lis_productos.html',productos=productos,tipos=tipos,formas=formas) 
 
 
 @app.route('/producto/agregar',methods=['POST'])    
@@ -387,6 +390,21 @@ def producto_agregar():
                 cursor.execute("""INSERT INTO productos(nombre, tipo, costo, precio, reg_ing)""" 
 	            + """VALUES (%s, %s, %s, %s, NOW())""",(nombre,tipo,costo,precio))
                 conn.commit()
+                cursor.execute(""" SELECT id FROM productos WHERE nombre = %s and tipo = %s 
+                AND costo = %s AND precio = %s ;""",(nombre,tipo,costo,precio))           
+                producto = cursor.fetchone() 
+                print(producto)               
+                if producto is not None:
+                    idproducto = producto[0]
+                    print(idproducto)
+                    for i in range(1,6):                                               
+                        forma = request.form['tipoPrecio' + str(i)]
+                        precio = request.form['precio' + str(i)]
+                        prima = request.form['prima' + str(i)]
+                        if forma != '' and float(precio) >= 0 and float(prima) >= 0:
+                            cursor.execute("""INSERT INTO precios_producto(producto, forma, precio, prima, reg_ing)""" 
+                            + """VALUES (%s, %s, %s, %s, NOW())""",(idproducto,forma,precio,prima))                            
+                            conn.commit()
                 flash("Registro Guardado con Exito") 
             return redirect(url_for('productos')) 
 
@@ -409,11 +427,17 @@ def producto_editar(id):
             return redirect(url_for('productos'))
         else:
             cursor.execute("SELECT id, nombre FROM tipos_producto ;")
-            tipos = cursor.fetchall()            
+            tipos = cursor.fetchall()  
+            cursor.execute("SELECT id, nombre FROM formas_pago ;")
+            formas = cursor.fetchall()          
             cursor.execute("SELECT id, nombre,tipo,costo,precio,existencia FROM productos WHERE id = %s ;",(id))
             producto = cursor.fetchone()
+            cursor.execute(""" SELECT tbl_a.id,tbl_a.producto,tbl_a.forma,tbl_b.nombre,tbl_a.precio,tbl_a.prima 
+            FROM precios_producto AS tbl_a LEFT JOIN formas_pago AS tbl_b ON tbl_a.forma = tbl_b.id
+            WHERE tbl_a.producto = %s ; """,(id))
+            precios = cursor.fetchall()
             if producto is not None:           
-                return render_template('productos/edi_producto.html',producto=producto,tipos=tipos)               
+                return render_template('productos/edi_producto.html',producto=producto,tipos=tipos,formas=formas,precios=precios)               
             else:
                 flash("Producto no existe")
                 return redirect(url_for('productos'))  
@@ -438,7 +462,7 @@ def producto_eliminar(id):
             else:
                 flash("Producto no existe")
                 return redirect(url_for('productos'))
-###------------------------------------------INI PRODUCTOS -------------------------------------------------###
+###------------------------------------------FIN PRODUCTOS -------------------------------------------------###
 ###------------------------------------------INI PROVEEDORES ----------------------_------------------------###
 @app.route('/proveedores')
 def proveedores():
@@ -800,6 +824,84 @@ def consigna_procesar(id):
                 flash("Consigna no existe")
                 return redirect(url_for('consignas'))
 ###------------------------------------------FIN CONSIGNAS ------------------------------------------------###
+###------------------------------------------INI FORMAPAGO -------------------------------------------------###
+#--- LISTADO FORMAPAGO ---#
+@app.route('/formaspago')
+def formaspago():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, nombre,dias FROM formas_pago ;")
+        datos = cursor.fetchall()
+        return render_template('formaspago/lis_formaspago.html',form=datos) 
 
+#--- NUEVO FORMAPAGO ---#
+@app.route('/formapago/agregar',methods=['POST'])    
+def formapago_agregar():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        if request.method == 'POST':
+            nombre = request.form['nombre']
+            dias = request.form['dias']
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM formas_pago WHERE dias = %s AND nombre = %s ",(dias,nombre))            
+            formapago = cursor.fetchone()
+            if formapago is not None:           
+                flash("Forma de Pago ya existe")
+                redirect(url_for('formaspago'))                
+            else:
+                cursor.execute("""INSERT INTO formas_pago(nombre,dias, reg_ing)""" 
+	            + """VALUES (%s,%s, NOW())""",(nombre,dias))
+                conn.commit()
+                flash("Registro Guardado con Exito") 
+            return redirect(url_for('formaspago'))
+
+#--- MODIFICAR FORMAPAGO ---#
+@app.route('/formapago/editar/<int:id>',methods=['POST','GET'])
+def formapago_editar(id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        cursor = conn.cursor()
+        if request.method == 'POST':
+            nombre = request.form['nombre']
+            dias = request.form['dias']            
+            cursor.execute("""	UPDATE formas_pago SET nombre = %s,dias = %s,reg_mod=NOW()
+	        WHERE id = %s """,(nombre,dias,id))
+            conn.commit()
+            flash("Registro Actualiazado con Exito")
+            return redirect(url_for('formaspago'))
+        else:
+            cursor.execute("SELECT id, nombre,dias FROM formas_pago WHERE id = %s ;",(id))
+            formapago = cursor.fetchone()
+            if formapago is not None:           
+                return render_template('formaspago/edi_formapago.html',form=formapago)               
+            else:
+                flash("Forma de Pago no existe")
+                return redirect(url_for('formaspago'))
+
+#--- ELIMINAR FORMAPAGO ---#
+@app.route('/formapago/eliminar/<int:id>',methods=['POST','GET'])
+def formapago_eliminar(id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        cursor = conn.cursor()
+        if request.method == 'POST':
+            cursor.execute("DELETE FROM formas_pago WHERE id = %s ",(id))
+            conn.commit()        
+            flash("Registro Eliminado con Exito")
+            return redirect(url_for('formaspago'))
+        else:
+            cursor.execute("SELECT id,nombre,dias FROM formas_pago WHERE id = %s ",(id))
+            formapago = cursor.fetchone()            
+            if formapago is not None:
+                return render_template('formaspago/eli_formapago.html',form=formapago)
+            else:
+                flash("Forma de Pago no existe")
+                return redirect(url_for('formaspago'))
+###------------------------------------------INI FORMAPAGO -------------------------------------------------###
 if __name__ == '__main__':
     app.run(port=3000,debug=True)
