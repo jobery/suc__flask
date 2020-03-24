@@ -634,17 +634,22 @@ def compra_editar(id):
 	        WHERE id = %s """,(fecha,documento,proveedor,id))
             conn.commit()
             idcompra = id
-            numdet = int(request.form['numdet'])
+            #numdet = int(request.form['numdet'])
             for i in range(1,6):
-               if i <= numdet:
-                    iddet = request.form['id' + str(i)] 
-                    producto = request.form['producto' + str(i)]
-                    cantidad = request.form['cantidad' + str(i)]
-                    precio = request.form['precio' + str(i)]
-                    if iddet != '' and producto != '' and float(cantidad) > 0 and float(precio) > 0.00:
-                        cursor.execute("""UPDATE detalle_compra SET producto = %s,cantidad = %s,precio = %s,reg_mod = NOW() """ 
-                        + """ WHERE id = %s AND compra = %s ;""",(producto,cantidad,precio,int(iddet),idcompra))
-                        conn.commit()            
+               #if i <= numdet:
+                iddet = request.form['id' + str(i)] 
+                producto = request.form['producto' + str(i)]
+                cantidad = request.form['cantidad' + str(i)]
+                precio = request.form['precio' + str(i)]
+                if iddet != '' and producto != '' and float(cantidad) > 0 and float(precio) > 0.00:
+                    cursor.execute("""UPDATE detalle_compra SET producto = %s,cantidad = %s,precio = %s,reg_mod = NOW() """ 
+                    + """ WHERE id = %s AND compra = %s ;""",(producto,cantidad,precio,int(iddet),idcompra))
+                    conn.commit()
+                else:
+                    if iddet == '' and producto != '' and float(cantidad) > 0 and float(precio) > 0.00:
+                        cursor.execute("""INSERT INTO detalle_compra(compra, producto, cantidad, precio, reg_ing)""" 
+                        + """VALUES (%s, %s, %s, %s, NOW())""",(idcompra,producto,cantidad,precio))
+                        conn.commit()
             flash("Registro Actualiazado con Exito")
             return redirect(url_for('compras'))
         else:
@@ -686,6 +691,7 @@ def compra_eliminar(id):
                 return redirect(url_for('compras'))                
 ###------------------------------------------FIN COMPRAS --------------------------------------------------###
 ###------------------------------------------INI CONSIGNAS ------------------------------------------------###
+#--- LISTAR CONSIGNA ---#
 @app.route('/consignas')
 def consignas():
     if not session.get('logged_in'):
@@ -702,6 +708,7 @@ def consignas():
         consignas = cursor.fetchall()
         return render_template('consignas/lis_consignas.html',consignas=consignas,vendedores=vendedores,productos=productos)
 
+#--- AGREGA CONSIGNA ---#
 @app.route('/consigna/agregar',methods=['POST'])    
 def consigna_agregar():
     if not session.get('logged_in'):
@@ -736,6 +743,7 @@ def consigna_agregar():
                 return redirect(url_for('consignas')) 
             return redirect(url_for('consignas')) 
 
+#--- MODIFICA CONSIGNA ---#
 @app.route('/consigna/editar/<int:id>',methods=['POST','GET'])
 def consigna_editar(id):
     if not session.get('logged_in'):
@@ -751,16 +759,21 @@ def consigna_editar(id):
 	        WHERE id = %s """,(fecha,proveedor,id))
             conn.commit()
             idconsigna = id
-            numdet = int(request.form['numdet'])
+            #numdet = int(request.form['numdet'])
             for i in range(1,6):
-               if i <= numdet:
-                    iddet = request.form['id' + str(i)] 
-                    producto = request.form['producto' + str(i)]
-                    cantidad = request.form['cantidad' + str(i)]
-                    if iddet != '' and producto != '' and float(cantidad) > 0:
-                        cursor.execute("""UPDATE detalle_consigna AS tbl_a SET tbl_a.producto = %s,tbl_a.cantidad = %s,tbl_a.reg_mod = NOW() """ 
-                        + """ WHERE tbl_a.id = %s AND tbl_a.consigna = %s ;""",(producto,cantidad,int(iddet),idconsigna))                        
-                        conn.commit()                                 
+               #if i <= numdet:
+                iddet = request.form['id' + str(i)] 
+                producto = request.form['producto' + str(i)]
+                cantidad = request.form['cantidad' + str(i)]
+                if iddet != '' and producto != '' and float(cantidad) > 0:
+                    cursor.execute("""UPDATE detalle_consigna AS tbl_a SET tbl_a.producto = %s,tbl_a.cantidad = %s,tbl_a.reg_mod = NOW() """ 
+                    + """ WHERE tbl_a.id = %s AND tbl_a.consigna = %s ;""",(producto,cantidad,int(iddet),idconsigna))                        
+                    conn.commit()
+                else:
+                    if iddet == '' and producto != '' and float(cantidad) > 0:
+                        cursor.execute("""INSERT INTO detalle_consigna(consigna, producto, cantidad, reg_ing)""" 
+                        + """VALUES (%s, %s, %s, NOW())""",(idconsigna,producto,cantidad))                            
+                        conn.commit()                                                                             
             flash("Registro Actualiazado con Exito")
             return redirect(url_for('consignas'))
         else:
@@ -780,6 +793,7 @@ def consigna_editar(id):
                 flash("Consigna no existe")
                 return redirect(url_for('consignas'))
 
+#--- ELIMINAR CONSIGNA ---#
 @app.route('/consigna/eliminar/<int:id>',methods=['POST','GET'])
 def consigna_eliminar(id):
     if not session.get('logged_in'):
@@ -801,14 +815,14 @@ def consigna_eliminar(id):
                 flash("Consigna no existe")
                 return redirect(url_for('consignas')) 
 
+#--- PROCESAR CONSIGNA ---#
 @app.route('/consigna/procesar/<int:id>',methods=['POST','GET'])
 def consigna_procesar(id):
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     else:
         cursor = conn.cursor()
-        if request.method == 'POST':
-            cursor = conn.cursor()           
+        if request.method == 'POST':                       
             cursor.execute("""	UPDATE consignas SET procesado = 1,reg_pro = NOW() WHERE id = %s """,(id))
             conn.commit()
             idconsigna = id
@@ -919,5 +933,55 @@ def formapago_eliminar(id):
                 flash("Forma de Pago no existe")
                 return redirect(url_for('formaspago'))
 ###------------------------------------------INI FORMAPAGO -------------------------------------------------###
+###------------------------------------------INI CXC ------------------------------------------------###
+#--- CXC CONSIGNA ---#
+@app.route('/cxc/consigna/<int:id>',methods=['POST','GET'])
+def cxc_consigan(id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        cursor = conn.cursor()
+        if request.method == 'POST':
+            fecha = request.form['fecha']
+            cursor.execute(""" SELECT consignas.id,consignas.procesado,consignas.fecha
+            ,CONCAT('#',consignas.id,' / ',consignas.fecha,' / ',TRIM(vendedores.nombre),' /$ ',consignas.total) AS descripcion
+            FROM consignas LEFT JOIN vendedores ON consignas.vendedor = vendedores.id WHERE consignas.id = %s ;""",(id))
+            consigna = cursor.fetchone()
+            print(consigna)
+            if consigna is not None:
+                seleccion = {"id":id,"fecha":fecha,"descripcion":consigna[3],}
+                print(seleccion)
+                if consigna[1] == 1:
+                    cursor.execute(""" SELECT id,consigna,producto,cantidad - devolucion as cantidad,precio 
+                    FROM detalle_consigna WHERE consigna = %s ; """,(id))
+                    detalleconsigna = cursor.fetchall()
+                    cursor.execute(""" SELECT tbl_a.id,tbl_b.nombre FROM detalle_consigna AS tbl_a LEFT JOIN productos AS tbl_b ON tbl_a.producto = tbl_b.id WHERE tbl_a.consigna = %s ; """,(id))
+                    productos = cursor.fetchall()
+                    cursor.execute("SELECT id,nombre FROM clientes ;")
+                    clientes = cursor.fetchall()
+                    cursor.execute("SELECT id,nombre FROM formas_pago ;")
+                    formaspago = cursor.fetchall()                    
+                    return render_template('cxc/cxc_det_consigna.html',consigna=consigna,detalleconsigna=detalleconsigna,clientes=clientes,productos=productos,formaspago=formaspago,seleccion)
+                else:
+                    flash("Consignacion no Procesada")
+                    return redirect(url_for('consignas'))
+            else:
+                flash("Consigna no Existe")
+                return redirect((url_for('consignas')))
+        else:
+            cursor.execute("SELECT id,fecha FROM consignas WHERE id = %s",(id))
+            selconsigna = cursor.fetchall()
+            if selconsigna is not None:
+                seleccion = {"id":id,"fecha":selconsigna[0][1],}
+            else:
+                seleccion = {"id":id,"fecha":"",} 
+            cursor.execute(""" SELECT consignas.id,CONCAT('#',consignas.id,' / ',consignas.fecha,' / ',TRIM(vendedores.nombre),' /$ ',consignas.total) AS descripcion FROM consignas 
+            LEFT JOIN vendedores ON consignas.vendedor = vendedores.id WHERE consignas.procesado = 1 ; """)
+            consignas = cursor.fetchall()
+            return render_template('cxc/cxc_consigna.html',consignas=consignas,seleccion=seleccion)
+
+
+
+###------------------------------------------FIN CXC ------------------------------------------------###
 if __name__ == '__main__':
     app.run(port=3000,debug=True)
