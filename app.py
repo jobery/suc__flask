@@ -1,7 +1,8 @@
-from flask import Flask,request,render_template,redirect,url_for,session,flash
+from flask import Flask,request,render_template,redirect,url_for,session,flash,Response,jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 import pymysql
 import secrets
+import json 
 
 from datetime import datetime
 
@@ -947,10 +948,8 @@ def cxc_consigan(id):
             ,CONCAT('#',consignas.id,' / ',consignas.fecha,' / ',TRIM(vendedores.nombre),' /$ ',consignas.total) AS descripcion
             FROM consignas LEFT JOIN vendedores ON consignas.vendedor = vendedores.id WHERE consignas.id = %s ;""",(id))
             consigna = cursor.fetchone()
-            print(consigna)
             if consigna is not None:
                 seleccion = {"id":id,"fecha":fecha,"descripcion":consigna[3],}
-                print(seleccion)
                 if consigna[1] == 1:
                     cursor.execute(""" SELECT id,consigna,producto,cantidad - devolucion as cantidad,precio 
                     FROM detalle_consigna WHERE consigna = %s ; """,(id))
@@ -961,7 +960,7 @@ def cxc_consigan(id):
                     clientes = cursor.fetchall()
                     cursor.execute("SELECT id,nombre FROM formas_pago ;")
                     formaspago = cursor.fetchall()                    
-                    return render_template('cxc/cxc_det_consigna.html',consigna=consigna,detalleconsigna=detalleconsigna,clientes=clientes,productos=productos,formaspago=formaspago,seleccion)
+                    return render_template('cxc/cxc_det_consigna.html',consigna=consigna,detalleconsigna=detalleconsigna,clientes=clientes,productos=productos,formaspago=formaspago,seleccion=seleccion)
                 else:
                     flash("Consignacion no Procesada")
                     return redirect(url_for('consignas'))
@@ -981,6 +980,21 @@ def cxc_consigan(id):
             return render_template('cxc/cxc_consigna.html',consignas=consignas,seleccion=seleccion)
 
 
+@app.route('/cxc/ajax_list_pro_con/',methods=['POST'])
+def cxc_listprodconsig():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        idconsigna = request.form['idconsigna']
+        print(idconsigna)
+        cursor = conn.cursor()   
+        cursor.execute(""" SELECT detalle_consigna.producto AS id,CONCAT(TRIM(productos.nombre),' / '
+        ,detalle_consigna.cantidad-detalle_consigna.devolucion,' / $ ',detalle_consigna.precio) AS nombre 
+        FROM detalle_consigna LEFT JOIN productos ON detalle_consigna.producto = productos.id WHERE consigna = %s ; """,(idconsigna))
+        detselect = cursor.fetchall()
+        reponse = jsonify(data=detselect,status=200)
+        print(reponse)
+        return reponse     
 
 ###------------------------------------------FIN CXC ------------------------------------------------###
 if __name__ == '__main__':

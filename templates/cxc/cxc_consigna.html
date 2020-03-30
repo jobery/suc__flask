@@ -7,29 +7,75 @@
         <div class="col-md-5">
             <div class="card-header">Generar Cargo CxC por Consignacion</div>
             {% with mensajes = get_flashed_messages() %}
-                {% if mensajes %}
-                    {% for mensaje in mensajes %}               
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ mensaje }}
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}    
-            <div class="card card-body">            
+            {% if mensajes %}
+            {% for mensaje in mensajes %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ mensaje }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+            <div class="card card-body">
                 <form action="/cxc/consigna/{{ seleccion.id }}" method="POST" autocomplete="on">
                     <div class="form-group">
-                        {{ dropdown('consigna', consignas,selected=[seleccion.id],extra=' required ') }}
+                        <input type="date" class="form-control" name="fecha" value="{{ seleccion.fecha }}" placeholder="Fecha" required>
                     </div>
                     <div class="form-group">
-                        <input type="date" class="form-control" name="fecha" value="{{ seleccion.fecha }}" placeholder="Fecha" required>
-                    </div>                                         
+                        {{ dropdown('consigna', consignas,selected=[seleccion.id],extra=' id="consigna" required ') }}
+                    </div>
+                    <div class="form-group">
+                        <select name="selproducto" id="selproducto" class="custom-select" required>
+                            <option value="" selected="selected">Seleccione Producto</option>
+                        </select>
+                    </div>
                     <button type="submit" id="sendlogin" class="btn btn-primary btn-block">Siguiente</button>
                 </form>
-            </div> 
-        </div>        
+            </div>
+        </div>
     </div>
 </div>
+{% endblock %}
+{% block script %}
+    $(document).ready(function(){
+
+        load_json_data($("#consigna").val());
+
+        function load_json_data()
+        {
+            var html_code = '';
+            $.ajax({
+                type:"POST",
+                url:"/cxc/ajax_list_pro_con/",
+                data:"idconsigna=" + $("#consigna").val(),
+                success:function(data){
+
+                    console.log(data);
+                    html_code = html_code + '<option value="" selected="selected">Seleccione Producto</option>'; 
+                    for(var arreglo in data) {
+                        for(var elemento in data[arreglo]){
+                            html_code = html_code + '<option value="'+data[arreglo][elemento][0]+'">'+data[arreglo][elemento][1]+'</option>';
+                        }
+                     }
+                    $('#selproducto').html(html_code);
+
+                }
+            });            
+        }
+
+        $(document).on('change','#consigna',function(){
+            var id = $(this).val();
+            if(id != '')
+            {
+                load_json_data();
+            }
+            else
+            {
+                $("#selproducto").html('<option value="" selected="selected">Seleccione Producto</option>');
+            }
+        });
+
+    });
 {% endblock %}

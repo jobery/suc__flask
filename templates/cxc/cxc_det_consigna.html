@@ -19,7 +19,10 @@
                 {% endif %}
             {% endwith %}    
             <div class="card card-body">            
-                <form action="/consigna/editar/{{ seleccion.id }}" method="POST" autocomplete="on">
+                <form id="form_detcon_cxc" action="/consigna/editar/{{ seleccion.id }}" method="POST" autocomplete="on">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="idconsigna" value="{{ seleccion.id }}" hidden>
+                    </div>
                     <div class="form-group">
                         <input type="date" class="form-control" name="fecha" value="{{ seleccion.fecha }}" placeholder="Fecha" readonly>
                     </div>
