@@ -24,30 +24,51 @@
                         <input type="text" class="form-control" name="idconsigna" value="{{ seleccion.id }}" hidden>
                     </div>
                     <div class="form-group">
+                        <input type="text" class="form-control" name="idproducto" value="{{ seleccion.producto }}" hidden>
+                    </div>
+                    <div class="form-group">
+                        <input type="numer" class="form-control" name="cantidad_ini" id="cantidad_ini" value="{{ seleccion.cantidad }}" hidden>
+                    </div>                                         
+                    <div class="form-group">
                         <input type="date" class="form-control" name="fecha" value="{{ seleccion.fecha }}" placeholder="Fecha" readonly>
                     </div>
                     <div class="form-group">
-                        <input type="text" name="descripcion" class="form-control" value="{{ seleccion.descripcion }}" placeholder="Cantidad" readonly>
-                    </div>  
+                        <input type="text" name="descripcion" class="form-control" value="{{ seleccion.descripcion }}" placeholder="Descripcion" readonly>
+                    </div>
+                    <div class="form-row">
+                        <div class="col-8">
+                            <div class="form-group">
+                                <input type="text" name="nomproducto" class="form-control" value="{{ seleccion.nomproducto }}" placeholder="Nombre Producto" readonly>
+                            </div> 
+                        </div>
+                        <div class="col-2">
+                            <div class="form-group">
+                                <label for="Cantidad">Cantidad Distribuir</label>
+                            </div> 
+                        </div> 
+                        <div class="col-2">
+                            <div class="form-group">
+                                <input type="text" name="cantidad_cxc" id="cantidad_cxc" class="form-control" value="{{ seleccion.cantidad }}" placeholder="Cantidad" disabled>
+                            </div>
+                            <div class="invalid-feedback">
+                                Please choose a username.
+                            </div>
+                        </div>                         
+                    </div>                                   
 
                     <!--  DETALLE ETIQUETAS -->
                     <div class="form-row" id="detproduc0" >
-                        <div class="col-3">
+                        <div class="col-4">
                             <div class="form-group">
                                 <label for="Cliente">Cliente</label>
                             </div>
                         </div>
-                        <div class="col-3">
-                            <div class="form-group">
-                                <label for="Producto">Producto</label>
-                            </div>
-                        </div> 
-                        <div class="col-1">
+                        <div class="col-2">
                             <div class="form-group">
                                 <label for="Cantidad">Cantidad</label>
                             </div>
                         </div>    
-                        <div class="col-3">
+                        <div class="col-4">
                             <div class="form-group">
                                 <label for="FormaPago">Forma de Pago</label>
                             </div>
@@ -65,22 +86,17 @@
 
                     {% for detalle in detalleconsigna %}
                     <div class="form-row" id="detproduc{{loop.index}}">
-                        <div class="col-3">
+                        <div class="col-4">
                             <div class="form-group">
                                 {{ dropdown('cliente' + loop.index|string , clientes, extra=' required ') }}
                             </div>                         
-                        </div>                        
-                        <div class="col-3">
+                        </div>                                         
+                        <div class="col-2">
                             <div class="form-group">
-                                {{ dropdown('producto' + loop.index|string , productos, extra=' required ') }}
-                            </div>                         
-                        </div>                        
-                        <div class="col-1">
-                            <div class="form-group">
-                                <input type="number" name="cantidad{{loop.index}}" class="form-control" max="{{ detalle.3 }}" placeholder="Cantidad" required>
+                                <input type="number" name="cantidad{{loop.index}}" id="cantidad{{loop.index}}" class="form-control" placeholder="Cantidad" required>
                             </div> 
                         </div>
-                        <div class="col-3">
+                        <div class="col-4">
                             <div class="form-group">
                                 {{ dropdown('formapago' + loop.index|string , formaspago, extra=' required ') }}
                             </div>                         
@@ -100,22 +116,17 @@
                     {% if detalleconsigna|length < 5 %}
                         {% for i in range(1+detalleconsigna|length,6) %}
                             <div class="form-row" id="detproduc{{i}}" >
-                                <div class="col-3">
+                                <div class="col-4">
                                     <div class="form-group">
                                         {{ dropdown('cliente' + i|string , clientes, extra='') }}
                                     </div>                         
                                 </div>
-                                <div class="col-3">
+                                <div class="col-2">
                                     <div class="form-group">
-                                        {{ dropdown('producto' + i|string , productos, extra='') }}
+                                        <input type="number" name="cantidad{{i}}" id="cantidad{{i}}" class="form-control" placeholder="Cantidad">
                                     </div> 
                                 </div>
-                                <div class="col-1">
-                                    <div class="form-group">
-                                        <input type="number" name="cantidad{{i}}" class="form-control" placeholder="Cantidad">
-                                    </div> 
-                                </div>
-                                <div class="col-3">
+                                <div class="col-4">
                                     <div class="form-group">
                                         {{ dropdown('formapago' + i|string , formaspago, extra='') }}
                                     </div>                         
@@ -127,16 +138,63 @@
                                 </div>                                                                                                                                                      
                                 <div class="col-3">
                                     <div class="form-group">
-                                        <input type="number" name="id{{i}}" class="form-control" value="TMP" hidden>
+                                        <input type="number" name="id{{i}}" class="form-control" value="0" hidden>
                                     </div> 
                                 </div>                                            
                             </div>                                
                         {% endfor %} 
                     {% endif  %}                     
-                    <button type="submit" id="sendlogin" class="btn btn-primary btn-block">Actualizar</button>
+                    <button type="submit" id="sendlogin" class="btn btn-primary btn-block" disabled>Actualizar</button>
                 </form>
             </div> 
         </div>        
     </div>
 </div>
+{% endblock %}
+{% block script %}
+    
+    var valor_inicial = $('#cantidad_ini').val();
+
+    $(document).ready(function(){                
+
+        $('#cantidad1').change(function(){
+            sumar();            
+        });
+
+        $('#cantidad2').change(function(){
+            sumar();          
+        }); 
+        
+        $('#cantidad3').change(function(){
+            sumar();         
+        });
+
+        $('#cantidad4').change(function(){
+            sumar();         
+        });
+
+        $('#cantidad5').change(function(){
+            sumar();         
+        });        
+        
+        function sumar(){
+            var valor_restar = 0;
+            var valor = parseInt(valor_inicial);
+            for (var i = 1; i < 6; i++) {
+                if ($('#cantidad' + i).val() > 0) {
+                    valor_restar += parseInt($('#cantidad' + i).val());
+                } 
+             }
+            $('#cantidad_cxc').val(valor - valor_restar);
+            if((valor - valor_restar)==0)
+            {
+                $("#sendlogin").removeAttr("disabled");
+            }
+            else
+            {
+                $("#sendlogin").attr("disabled", "disabled");
+            }
+        }
+
+    });
 {% endblock %}

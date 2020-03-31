@@ -944,22 +944,26 @@ def cxc_consigan(id):
         cursor = conn.cursor()
         if request.method == 'POST':
             fecha = request.form['fecha']
+            idproducto = request.form['selproducto']
             cursor.execute(""" SELECT consignas.id,consignas.procesado,consignas.fecha
             ,CONCAT('#',consignas.id,' / ',consignas.fecha,' / ',TRIM(vendedores.nombre),' /$ ',consignas.total) AS descripcion
             FROM consignas LEFT JOIN vendedores ON consignas.vendedor = vendedores.id WHERE consignas.id = %s ;""",(id))
             consigna = cursor.fetchone()
-            if consigna is not None:
-                seleccion = {"id":id,"fecha":fecha,"descripcion":consigna[3],}
+            if consigna is not None:                
                 if consigna[1] == 1:
                     cursor.execute(""" SELECT id,consigna,producto,cantidad - devolucion as cantidad,precio 
                     FROM detalle_consigna WHERE consigna = %s ; """,(id))
                     detalleconsigna = cursor.fetchall()
-                    cursor.execute(""" SELECT tbl_a.id,tbl_b.nombre FROM detalle_consigna AS tbl_a LEFT JOIN productos AS tbl_b ON tbl_a.producto = tbl_b.id WHERE tbl_a.consigna = %s ; """,(id))
+                    cursor.execute(""" SELECT detalle_consigna.producto AS id,CONCAT('#',productos.id,' / ',TRIM(productos.nombre),' / '
+                    ,detalle_consigna.cantidad-(detalle_consigna.devolucion+detalle_consigna.cantidad_cxc),' / $ ',detalle_consigna.precio) AS nombre 
+                    ,cantidad - (devolucion + cantidad_cxc) AS cantidad FROM detalle_consigna LEFT JOIN productos ON detalle_consigna.producto = productos.id 
+                    WHERE consigna = %s AND productos.id = %s ; """,(id,idproducto))
                     productos = cursor.fetchall()
                     cursor.execute("SELECT id,nombre FROM clientes ;")
                     clientes = cursor.fetchall()
                     cursor.execute("SELECT id,nombre FROM formas_pago ;")
-                    formaspago = cursor.fetchall()                    
+                    formaspago = cursor.fetchall()
+                    seleccion = {"id":id,"fecha":fecha,"descripcion":consigna[3],"producto":idproducto,"nomproducto":productos[0][1],"cantidad":productos[0][2],}                   
                     return render_template('cxc/cxc_det_consigna.html',consigna=consigna,detalleconsigna=detalleconsigna,clientes=clientes,productos=productos,formaspago=formaspago,seleccion=seleccion)
                 else:
                     flash("Consignacion no Procesada")
@@ -986,14 +990,13 @@ def cxc_listprodconsig():
         return redirect(url_for('login'))
     else:
         idconsigna = request.form['idconsigna']
-        print(idconsigna)
         cursor = conn.cursor()   
-        cursor.execute(""" SELECT detalle_consigna.producto AS id,CONCAT(TRIM(productos.nombre),' / '
-        ,detalle_consigna.cantidad-detalle_consigna.devolucion,' / $ ',detalle_consigna.precio) AS nombre 
-        FROM detalle_consigna LEFT JOIN productos ON detalle_consigna.producto = productos.id WHERE consigna = %s ; """,(idconsigna))
+        cursor.execute(""" SELECT detalle_consigna.producto AS id,CONCAT('#',productos.id,' / ',TRIM(productos.nombre),' / '
+        ,detalle_consigna.cantidad-(detalle_consigna.devolucion+detalle_consigna.cantidad_cxc),' / $ ',detalle_consigna.precio) AS nombre 
+        FROM detalle_consigna LEFT JOIN productos ON detalle_consigna.producto = productos.id WHERE consigna = %s 
+        AND (cantidad-devolucion)>cantidad_cxc ; """,(idconsigna))
         detselect = cursor.fetchall()
         reponse = jsonify(data=detselect,status=200)
-        print(reponse)
         return reponse     
 
 ###------------------------------------------FIN CXC ------------------------------------------------###
