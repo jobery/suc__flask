@@ -19,16 +19,19 @@
                 {% endif %}
             {% endwith %}    
             <div class="card card-body">            
-                <form id="form_detcon_cxc" action="/consigna/editar/{{ seleccion.id }}" method="POST" autocomplete="on">
+                <form id="form_detcon_cxc" action="/cxc/detconsigna/" method="POST" autocomplete="on">
                     <div class="form-group">
                         <input type="text" class="form-control" name="idconsigna" value="{{ seleccion.id }}" hidden>
                     </div>
                     <div class="form-group">
+                        <input type="text" class="form-control" name="iddetalle" value="{{ seleccion.iddetalle }}" hidden>
+                    </div>                    
+                    <div class="form-group">
                         <input type="text" class="form-control" name="idproducto" value="{{ seleccion.producto }}" hidden>
                     </div>
                     <div class="form-group">
-                        <input type="numer" class="form-control" name="cantidad_ini" id="cantidad_ini" value="{{ seleccion.cantidad }}" hidden>
-                    </div>                                         
+                        <input type="number" class="form-control" id="cantidad_ini" value="{{ seleccion.cantidad }}" hidden>
+                    </div>                                                          
                     <div class="form-group">
                         <input type="date" class="form-control" name="fecha" value="{{ seleccion.fecha }}" placeholder="Fecha" readonly>
                     </div>
@@ -41,19 +44,26 @@
                                 <input type="text" name="nomproducto" class="form-control" value="{{ seleccion.nomproducto }}" placeholder="Nombre Producto" readonly>
                             </div> 
                         </div>
-                        <div class="col-2">
+                        <div class="col-1">
                             <div class="form-group">
-                                <label for="Cantidad">Cantidad Distribuir</label>
+                                <label for="Cantidad">Cantidad</label>
                             </div> 
                         </div> 
-                        <div class="col-2">
+                        <div class="col-1">
+                            <div class="form-group">                                
+                                <input type="numer" class="form-control" name="disponible" value="{{ seleccion.cantidad }}" readonly>
+                            </div>
+                        </div>
+                        <div class="col-1">
                             <div class="form-group">
-                                <input type="text" name="cantidad_cxc" id="cantidad_cxc" class="form-control" value="{{ seleccion.cantidad }}" placeholder="Cantidad" disabled>
-                            </div>
-                            <div class="invalid-feedback">
-                                Please choose a username.
-                            </div>
-                        </div>                         
+                                <label for="Cantidad">Pendiente</label>
+                            </div> 
+                        </div> 
+                        <div class="col-1">
+                            <div class="form-group">
+                                <input type="text" name="pendiente" class="form-control" value="{{ seleccion.cantidad }}" placeholder="Pendiente" readonly> 
+                            </div> 
+                        </div>                                                  
                     </div>                                   
 
                     <!--  DETALLE ETIQUETAS -->
@@ -88,22 +98,22 @@
                     <div class="form-row" id="detproduc{{loop.index}}">
                         <div class="col-4">
                             <div class="form-group">
-                                {{ dropdown('cliente' + loop.index|string , clientes, extra=' required ') }}
+                                {{ dropdown('cliente' + loop.index|string , clientes,selected=[detalle.1], extra=' ') }}
                             </div>                         
                         </div>                                         
                         <div class="col-2">
                             <div class="form-group">
-                                <input type="number" name="cantidad{{loop.index}}" id="cantidad{{loop.index}}" class="form-control" placeholder="Cantidad" required>
+                                <input type="number" name="cantidad{{loop.index}}" id="cantidad{{loop.index}}" class="form-control" value="{{ detalle.2 }}" placeholder="Cantidad" >
                             </div> 
                         </div>
                         <div class="col-4">
                             <div class="form-group">
-                                {{ dropdown('formapago' + loop.index|string , formaspago, extra=' required ') }}
+                                {{ dropdown('formapago' + loop.index|string , formaspago,selected=[detalle.3], extra='') }}
                             </div>                         
                         </div>
                         <div class="col-2">
                             <div class="form-group">
-                                <input type="number" step="any" name="prima{{loop.index}}" class="form-control"  placeholder="Prima" >
+                                <input type="number" step="any" name="prima{{loop.index}}" class="form-control" value="{{ detalle.4 }}"  placeholder="Prima" >
                             </div> 
                         </div>                                                
                         <div class="col-3">
@@ -138,13 +148,13 @@
                                 </div>                                                                                                                                                      
                                 <div class="col-3">
                                     <div class="form-group">
-                                        <input type="number" name="id{{i}}" class="form-control" value="0" hidden>
+                                        <input type="number" name="id{{i}}" class="form-control" value="" hidden>
                                     </div> 
                                 </div>                                            
                             </div>                                
                         {% endfor %} 
                     {% endif  %}                     
-                    <button type="submit" id="sendlogin" class="btn btn-primary btn-block" disabled>Actualizar</button>
+                    <button type="submit" id="sendlogin" class="btn btn-primary btn-block" disabled>Generar</button>
                 </form>
             </div> 
         </div>        
@@ -157,23 +167,23 @@
 
     $(document).ready(function(){                
 
-        $('#cantidad1').change(function(){
+        $('#cantidad1').on('change focus',function(){
             sumar();            
         });
 
-        $('#cantidad2').change(function(){
+        $('#cantidad2').on('change focus',function(){
             sumar();          
         }); 
         
-        $('#cantidad3').change(function(){
+        $('#cantidad3').on('change focus',function(){
             sumar();         
         });
 
-        $('#cantidad4').change(function(){
+        $('#cantidad4').on('change focus',function(){
             sumar();         
         });
 
-        $('#cantidad5').change(function(){
+        $('#cantidad5').on('change focus',function(){
             sumar();         
         });        
         
@@ -185,7 +195,8 @@
                     valor_restar += parseInt($('#cantidad' + i).val());
                 } 
              }
-            $('#cantidad_cxc').val(valor - valor_restar);
+            //$('#cantidad_cxc').val(valor - valor_restar);
+            $('input[name=pendiente]').val(valor - valor_restar);
             if((valor - valor_restar)==0)
             {
                 $("#sendlogin").removeAttr("disabled");

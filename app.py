@@ -400,9 +400,11 @@ def producto_agregar():
                         forma = request.form['tipoPrecio' + str(i)]
                         precio = request.form['precio' + str(i)]
                         prima = request.form['prima' + str(i)]
-                        if forma != '' and float(precio) >= 0 and float(prima) >= 0:
+                        if forma != '' and precio != '':
+                            if prima == '':
+                                prima = '0'
                             cursor.execute("""INSERT INTO precios_producto(producto, forma, precio, prima, reg_ing)""" 
-                            + """VALUES (%s, %s, %s, %s, NOW())""",(idproducto,forma,precio,prima))                            
+                            + """VALUES (%s, %s, %s, %s, NOW())""",(idproducto,forma,float(precio),float(prima)))                            
                             conn.commit()
                 flash("Registro Guardado con Exito") 
             return redirect(url_for('productos')) 
@@ -430,14 +432,16 @@ def producto_editar(id):
                 forma = request.form['tipoPrecio' + str(i)]
                 precio = request.form['precio' + str(i)]
                 prima = request.form['prima' + str(i)]
-                if iddet != '' and forma != '' and float(precio) >= 0 and float(prima) >= 0:
+                if prima == '':
+                    prima = '0'
+                if iddet != '' and forma != '' and precio != '':
                     cursor.execute("""UPDATE precios_producto SET forma = %s,precio = %s, prima = %s""" 
-                    + """ ,reg_mod = NOW() WHERE id = %s AND producto = %s ;  """,(forma,precio,prima,iddet,idproducto))                            
+                    + """ ,reg_mod = NOW() WHERE id = %s AND producto = %s ;  """,(forma,float(precio),float(prima),iddet,idproducto))                            
                     conn.commit()
                 else:
-                    if iddet == '' and forma != '' and float(precio) >= 0 and float(prima) >= 0:
+                    if iddet == '' and forma != '' and precio != '':
                         cursor.execute("""INSERT INTO precios_producto(producto, forma, precio, prima, reg_ing)""" 
-                        + """VALUES (%s, %s, %s, %s, NOW())""",(idproducto,forma,precio,prima))                            
+                        + """VALUES (%s, %s, %s, %s, NOW())""",(idproducto,forma,float(precio),float(prima)))                            
                         conn.commit()
             flash("Registro Actualiazado con Exito")
             return redirect(url_for('productos'))
@@ -847,7 +851,7 @@ def consigna_procesar(id):
             cursor.execute("""SELECT TBL_A.id,TBL_A.fecha,TBL_A.vendedor,TBL_B.nombre AS nombre_vendedor,TBL_A.total
             ,IF(TBL_A.procesado=1,'SI','NO') AS procesado FROM consignas AS TBL_A LEFT JOIN vendedores AS TBL_B ON TBL_A.vendedor = TBL_B.id  WHERE TBL_A.id = %s ;""",(id))
             consigna = cursor.fetchall()
-            cursor.execute("SELECT id,consigna, producto, cantidad,devolucion FROM detalle_consigna WHERE consigna = %s",(id))
+            cursor.execute("SELECT id,consigna,producto,cantidad,devolucion,cantidad_cxc FROM detalle_consigna WHERE consigna = %s",(id))
             detalleconsigna = cursor.fetchall()            
             if consigna is not None:           
                 return render_template('consignas/pro_consigna.html',consigna=consigna,vendedores=vendedores,productos=productos,detalleconsigna=detalleconsigna)               
@@ -944,26 +948,25 @@ def cxc_consigan(id):
         cursor = conn.cursor()
         if request.method == 'POST':
             fecha = request.form['fecha']
-            idproducto = request.form['selproducto']
+            iddetalle = request.form['seldetalle']
             cursor.execute(""" SELECT consignas.id,consignas.procesado,consignas.fecha
             ,CONCAT('#',consignas.id,' / ',consignas.fecha,' / ',TRIM(vendedores.nombre),' /$ ',consignas.total) AS descripcion
             FROM consignas LEFT JOIN vendedores ON consignas.vendedor = vendedores.id WHERE consignas.id = %s ;""",(id))
             consigna = cursor.fetchone()
             if consigna is not None:                
                 if consigna[1] == 1:
-                    cursor.execute(""" SELECT id,consigna,producto,cantidad - devolucion as cantidad,precio 
-                    FROM detalle_consigna WHERE consigna = %s ; """,(id))
+                    cursor.execute(""" SELECT id, cliente, cantidad, forma, prima FROM cargos_cxc WHERE consigna = %s AND detconsigna = %s ; """,(id,iddetalle))
                     detalleconsigna = cursor.fetchall()
                     cursor.execute(""" SELECT detalle_consigna.producto AS id,CONCAT('#',productos.id,' / ',TRIM(productos.nombre),' / '
                     ,detalle_consigna.cantidad-(detalle_consigna.devolucion+detalle_consigna.cantidad_cxc),' / $ ',detalle_consigna.precio) AS nombre 
                     ,cantidad - (devolucion + cantidad_cxc) AS cantidad FROM detalle_consigna LEFT JOIN productos ON detalle_consigna.producto = productos.id 
-                    WHERE consigna = %s AND productos.id = %s ; """,(id,idproducto))
+                    WHERE consigna = %s AND detalle_consigna.id = %s ; """,(id,iddetalle))
                     productos = cursor.fetchall()
                     cursor.execute("SELECT id,nombre FROM clientes ;")
                     clientes = cursor.fetchall()
                     cursor.execute("SELECT id,nombre FROM formas_pago ;")
                     formaspago = cursor.fetchall()
-                    seleccion = {"id":id,"fecha":fecha,"descripcion":consigna[3],"producto":idproducto,"nomproducto":productos[0][1],"cantidad":productos[0][2],}                   
+                    seleccion = {"id":id,"iddetalle":iddetalle,"fecha":fecha,"descripcion":consigna[3],"producto":productos[0][0],"nomproducto":productos[0][1],"cantidad":productos[0][2],}                   
                     return render_template('cxc/cxc_det_consigna.html',consigna=consigna,detalleconsigna=detalleconsigna,clientes=clientes,productos=productos,formaspago=formaspago,seleccion=seleccion)
                 else:
                     flash("Consignacion no Procesada")
@@ -983,7 +986,59 @@ def cxc_consigan(id):
             consignas = cursor.fetchall()
             return render_template('cxc/cxc_consigna.html',consignas=consignas,seleccion=seleccion)
 
+#--- CXC DET-CONSIGNA ---#
+@app.route('/cxc/detconsigna/',methods=['POST'])
+def cxc_det_consigna():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        cursor = conn.cursor()
+        consigna = request.form['idconsigna']  
+        iddetalle = request.form['iddetalle']  
+        producto = request.form['idproducto']
+        fecha = request.form['fecha']
+        pendiente = request.form['pendiente']
+        if float(pendiente) == 0:
+            for i in range(1,6):
+                iddet = request.form['id' + str(i)] 
+                cliente = request.form['cliente' + str(i)]
+                cantidad = request.form['cantidad' + str(i)]
+                formapago = request.form['formapago' + str(i)]
+                prima = request.form['prima' + str(i)]                   
+                if iddet != '' and cliente != '' and formapago != '' and float(cantidad) > 0:
+                    id = int(iddet)
+                    cursor.execute("""UPDATE cargos_cxc SET cliente = %s,producto = %s,cantidad = %s,reg_mod = NOW()
+                    ,consigna = %s,detconsigna = %s,forma = %s,prima = %s,fecha = %s WHERE id = %s ;"""
+                    ,(cliente,producto,cantidad,consigna,iddetalle,formapago,prima,fecha,id))                        
+                    conn.commit()
+                else:
+                    if iddet == '' and cliente != '' and formapago != '' and float(cantidad) > 0:
+                        cursor.execute(""" INSERT INTO cargos_cxc(fecha, consigna, detconsigna, cliente, producto, cantidad, forma, prima, reg_ing)
+	                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW()) """,(fecha,consigna,iddetalle,cliente,producto,cantidad,formapago,prima))                            
+                        conn.commit()
 
+                cursor.execute(""" UPDATE cargos_cxc,precios_producto SET cargos_cxc.precio = precios_producto.precio WHERE cargos_cxc.consigna = %s 
+                AND cargos_cxc.producto = precios_producto.producto AND cargos_cxc.forma = precios_producto.forma ;""",(consigna))
+                conn.commit()
+
+                cursor.execute(""" UPDATE cargos_cxc,productos SET cargos_cxc.precio = productos.precio WHERE cargos_cxc.consigna = %s 
+                AND cargos_cxc.precio = 0 AND cargos_cxc.producto = productos.id ;""",(consigna))
+                conn.commit()
+
+                cursor.execute(""" UPDATE cargos_cxc SET valor = (cantidad * precio) - prima WHERE consigna = %s ;""",(consigna))
+                conn.commit()
+
+                cursor.execute(""" UPDATE detalle_consigna SET cantidad_cxc = ( SELECT sum(cantidad) AS total_cantidad FROM cargos_cxc 
+                WHERE consigna = %s AND detconsigna = %s ) WHERE id = %s AND consigna = %s ; """,(consigna,iddetalle,iddetalle,consigna))
+                conn.commit()
+
+        else:
+            flash("Por favor Distribuir Cantidad Completa")
+            return redirect(url_for('consignas'))                                                                                         
+        flash("Registro Actualiazado con Exito")
+        return redirect(url_for('consignas'))            
+            
+#--- CXC AJAX ---#
 @app.route('/cxc/ajax_list_pro_con/',methods=['POST'])
 def cxc_listprodconsig():
     if not session.get('logged_in'):
@@ -991,7 +1046,7 @@ def cxc_listprodconsig():
     else:
         idconsigna = request.form['idconsigna']
         cursor = conn.cursor()   
-        cursor.execute(""" SELECT detalle_consigna.producto AS id,CONCAT('#',productos.id,' / ',TRIM(productos.nombre),' / '
+        cursor.execute(""" SELECT detalle_consigna.id,CONCAT('#',productos.id,' / ',TRIM(productos.nombre),' / '
         ,detalle_consigna.cantidad-(detalle_consigna.devolucion+detalle_consigna.cantidad_cxc),' / $ ',detalle_consigna.precio) AS nombre 
         FROM detalle_consigna LEFT JOIN productos ON detalle_consigna.producto = productos.id WHERE consigna = %s 
         AND (cantidad-devolucion)>cantidad_cxc ; """,(idconsigna))

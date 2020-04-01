@@ -32,10 +32,12 @@
                     <div class="form-group">
                         <input type="number" class="form-control" name="precio"value="{{ producto.4 }}" placeholder="Precio" required>
                     </div>
-
+                    <div class="form-group">
+                        <input type="number" class="form-control" name="existencia"value="{{ producto.5 }}" placeholder="Precio" readonly>
+                    </div>                    
                     <div class="form-group" hidden>
                         <input type="number" name="numdet" class="form-control" value="{{ detalleprecios|length }}" hidden>
-                    </div>                    
+                    </div>                                        
                     <!--  DETALLE ETIQUETAS -->
                     <div class="form-row" id="detproduc0" >
                         <div class="col-6">
