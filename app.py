@@ -851,7 +851,8 @@ def consigna_procesar(id):
             cursor.execute("""SELECT TBL_A.id,TBL_A.fecha,TBL_A.vendedor,TBL_B.nombre AS nombre_vendedor,TBL_A.total
             ,IF(TBL_A.procesado=1,'SI','NO') AS procesado FROM consignas AS TBL_A LEFT JOIN vendedores AS TBL_B ON TBL_A.vendedor = TBL_B.id  WHERE TBL_A.id = %s ;""",(id))
             consigna = cursor.fetchall()
-            cursor.execute("SELECT id,consigna,producto,cantidad,devolucion,cantidad_cxc FROM detalle_consigna WHERE consigna = %s",(id))
+            cursor.execute(""" SELECT id,consigna,producto,cantidad,devolucion,cantidad_cxc,IF(cantidad_cxc<>0,'SI','NO') AS procesado_cxc 
+            FROM detalle_consigna WHERE consigna = %s ;""",(id))
             detalleconsigna = cursor.fetchall()            
             if consigna is not None:           
                 return render_template('consignas/pro_consigna.html',consigna=consigna,vendedores=vendedores,productos=productos,detalleconsigna=detalleconsigna)               

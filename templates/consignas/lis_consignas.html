@@ -33,7 +33,7 @@
 
                     <!--  DETALLE #1  -->
                     <div class="form-row" id="detproduc0" >
-                        <div class="col-6">
+                        <div class="col-9">
                             <div class="form-group">
                                 <label for="Producto">Producto</label>
                             </div>
@@ -47,7 +47,7 @@
 
                     {% for i in range(1,6) %}
                         <div class="form-row" id="detproduc{{loop.index}}" >
-                            <div class="col-6">
+                            <div class="col-9">
                                 <div class="form-group">
                                     {{ dropdown('producto' + loop.index|string , productos, extra='') }}
                                 </div>                         
