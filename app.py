@@ -483,6 +483,28 @@ def producto_eliminar(id):
             else:
                 flash("Producto no existe")
                 return redirect(url_for('productos'))
+
+#--- PRODUCTO PRECIO AJAX ---#
+@app.route('/producto/ajax_precio/',methods=['POST'])
+def producto_precio():
+    idproducto = request.form['idproducto']
+    idforma = request.form['idforma']
+    cursor = conn.cursor()
+    contexto = {'id':idproducto,'precio':'0.00'}
+    if idproducto != '':
+        if idforma != '':
+            cursor.execute(""" SELECT producto,precio FROM precios_producto WHERE producto = %s AND forma = %s ; """,(idforma,idproducto))
+            precios = cursor.fetchone()
+            if precios is not None:
+                contexto = {'id':idproducto,'precio':str(precios[1])}                
+        else:                
+            cursor.execute(""" SELECT id,precio FROM productos WHERE id = %s ; """,(idproducto))
+            precios = cursor.fetchone()
+            if precios is not None:
+                contexto = {'id':idproducto,'precio':str(precios[1])}                  
+    print(contexto)
+    reponse = jsonify(contexto)
+    return reponse
 ###------------------------------------------FIN PRODUCTOS -------------------------------------------------###
 ###------------------------------------------INI PROVEEDORES ----------------------_------------------------###
 @app.route('/proveedores')
