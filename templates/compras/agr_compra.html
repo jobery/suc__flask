@@ -1,0 +1,219 @@
+{% extends 'plantillas/layout.html' %}
+{% block titulo %}Compras{% endblock %}
+{% from "plantillas/dropdown.html" import dropdown %}
+{% block cuerpo %}
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card-header">Nuevo Compra</div>   
+            <div class="card card-body">            
+                <form id="form" action="/compra/agregar" method="POST" autocomplete="on">
+                    <div class="form-group">
+                        <input type="date" class="form-control" name="fecha" placeholder="Fecha" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="documento" placeholder="Documento" required>
+                    </div>
+                    <div class="form-group">
+                        {{ dropdown('proveedor', proveedores, extra=' id="proveedores" required ') }}
+                    </div>
+                    <div class="form-group">
+                        <input type="number" step="any" class="form-control" name="totalcom" value="0.00" placeholder="Total Compra" readonly>
+                    </div>                      
+                    
+                    <!-- <div class="form-group">
+                        <button type="button" id="btn_agr_det_com" class="btn btn-success btn-block">Agrear Producto</button>
+                    </div> -->
+
+                    <!--  DETALLE #1  -->
+                    <div class="form-row" id="detproduc0" >
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label for="Producto">Producto</label>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <label for="Cantidad">Cantidad</label>
+                            </div>
+                        </div>  
+                        <div class="col-3">
+                            <div class="form-group">
+                                <label for="Precio">Precio</label>
+                            </div>
+                        </div>                                               
+                    </div>
+                    
+                    <div class="form-row" id="detproduc1" >
+                        <div class="col-4">
+                            <div class="form-group">
+                                {{ dropdown('producto1', productos, extra=' required ') }}
+                            </div>                         
+                        </div>                        
+                        <div class="col-2">
+                            <div class="form-group">
+                                <input type="number" name="cantidad1" class="form-control" placeholder="Cantidad" required>
+                            </div> 
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <input type="number" step="any" name="precio1" class="form-control" placeholder="Precio" required>
+                            </div> 
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <input type="number" step="any" name="total1" class="form-control" value="0.00" placeholder="Total" readonly>
+                            </div> 
+                        </div>                                                 
+                    </div>
+
+                    <!--  DETALLE #2  -->
+                    
+                    <div class="form-row" id="detproduc2" >
+                        <div class="col-4">
+                            <div class="form-group">
+                                {{ dropdown('producto2', productos, extra='') }}
+                            </div>                         
+                        </div>                        
+                        <div class="col-2">
+                            <div class="form-group">
+                                <input type="number" name="cantidad2" class="form-control" placeholder="Cantidad" >
+                            </div> 
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <input type="number" step="any" name="precio2" class="form-control" placeholder="Precio" >
+                            </div> 
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <input type="number" step="any" name="total2" class="form-control" value="0.00" placeholder="Total" readonly>
+                            </div> 
+                        </div>                                                 
+                    </div> 
+
+                    <!--  DETALLE #3  -->
+                    
+                    <div class="form-row" id="detproduc3" >
+                        <div class="col-4">
+                            <div class="form-group">
+                                {{ dropdown('producto3', productos, extra='') }}
+                            </div>                         
+                        </div>                        
+                        <div class="col-2">
+                            <div class="form-group">
+                                <input type="number" name="cantidad3" class="form-control" placeholder="Cantidad" >
+                            </div> 
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <input type="number" step="any" name="precio3" class="form-control" placeholder="Precio" >
+                            </div> 
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <input type="number" step="any" name="total3" class="form-control" value="0.00" placeholder="Total" readonly>
+                            </div> 
+                        </div>                                                 
+                    </div>   
+
+                    <!--  DETALLE #4  -->
+                    
+                    <div class="form-row" id="detproduc4" >
+                        <div class="col-4">
+                            <div class="form-group">
+                                {{ dropdown('producto4', productos, extra='') }}
+                            </div>                         
+                        </div>                        
+                        <div class="col-2">
+                            <div class="form-group">
+                                <input type="number" name="cantidad4" class="form-control" placeholder="Cantidad" >
+                            </div> 
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <input type="number" step="any" name="precio4" class="form-control" placeholder="Precio" >
+                            </div> 
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <input type="number" step="any" name="total4" class="form-control" value="0.00" placeholder="Total" readonly>
+                            </div> 
+                        </div>                         
+                    </div>   
+                    
+                    <!--  DETALLE #5  -->
+                    
+                    <div class="form-row" id="detproduc5" >
+                        <div class="col-4">
+                            <div class="form-group">
+                                {{ dropdown('producto5', productos, extra='') }}
+                            </div>                         
+                        </div>                        
+                        <div class="col-2">
+                            <div class="form-group">
+                                <input type="number" name="cantidad5" class="form-control" placeholder="Cantidad" >
+                            </div> 
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <input type="number" step="any" name="precio5" class="form-control" placeholder="Precio" >
+                            </div> 
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <input type="number" step="any" name="total5" class="form-control" value="0.00" placeholder="Total" readonly>
+                            </div> 
+                        </div>                                                 
+                    </div>                     
+
+                    <button type="submit" id="sendlogin" class="btn btn-primary btn-block">Guardar</button>
+                                        
+                </form>
+            </div> 
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    
+    $(document).ready(function(){       
+
+        $('input[name=cantidad1],input[name=precio1]').on('change focus Blur',function(){
+            total();            
+        });
+
+        $('input[name=cantidad2],input[name=precio2]').on('change focus Blur',function(){
+            total();          
+        }); 
+        
+        $('input[name=cantidad3],input[name=precio3]').on('change focus Blur',function(){
+            total();         
+        });
+
+        $('input[name=cantidad4],input[name=precio4]').on('change focus Blur',function(){
+            total();         
+        });
+
+        $('input[name=cantidad5],input[name=precio5]').on('change focus Blur',function(){
+            total();         
+        });        
+        
+        function total(){
+            var valor_total = 0.00;                       
+            for (var i = 1; i < 6; i++) {
+                var campc = 'cantidad' + i
+                var campp = 'precio' + i
+                var campt = 'total' + i
+                var total = 0.00;
+                if ($('input[name='+campc+']').val() != 0 || $('input[name='+campp+']').val() != 0) {
+                    total = parseInt($('input[name='+campc+']').val()) * parseFloat($('input[name='+campp+']').val());
+                    valor_total += total;
+                }
+                $('input[name='+campt+']').val(total); 
+             }
+            $('input[name=totalcom]').val(valor_total);
+        }        
+
+    });
+{% endblock %}

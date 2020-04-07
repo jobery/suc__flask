@@ -119,7 +119,7 @@ def clientes():
         datos = cursor.fetchall()
         return render_template('clientes/lis_clientes.html',form=datos) 
 
-@app.route('/cliente/agregar',methods=['POST'])    
+@app.route('/cliente/agregar',methods=['POST','GET'])    
 def cliente_agregar():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -143,6 +143,8 @@ def cliente_agregar():
                 conn.commit()
                 flash("Registro Guardado con Exito") 
             return redirect(url_for('clientes'))
+        else:
+            return render_template('clientes/agr_clientes.html')
 
 @app.route('/cliente/editar/<int:id>',methods=['POST','GET'])
 def cliente_editar(id):
@@ -190,7 +192,11 @@ def cliente_eliminar(id):
                 return render_template('clientes/eli_cliente.html',form=cliente)
             else:
                 flash("Cliente no existe")
-                return redirect(url_for('clientes'))  
+                return redirect(url_for('clientes'))
+
+@app.route('/cliente/buscar',methods=['POST'])  
+def cliente_buscar():
+    return redirect(url_for('clientes'))
 
 ###------------------------------------------FIN CLIENTES -------------------------------------------------###
 ###------------------------------------------INI VENDEDOR -------------------------------------------------###
@@ -204,7 +210,7 @@ def vendedores():
         datos = cursor.fetchall()
         return render_template('vendedores/lis_vendedores.html',form=datos)
 
-@app.route('/vendedor/agregar',methods=['POST'])    
+@app.route('/vendedor/agregar',methods=['POST','GET'])    
 def vendedor_agregar():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -227,7 +233,9 @@ def vendedor_agregar():
 	            + """VALUES (%s, %s, %s, %s, %s, %s, 1, NOW())""",(nombre,correo,telefono,dui,nit,direccion))
                 conn.commit()
                 flash("Registro Guardado con Exito") 
-            return redirect(url_for('vendedores'))        
+            return redirect(url_for('vendedores'))
+        else:
+            return render_template('vendedores/agr_vendedor.html')        
 
 
 @app.route('/vendedor/editar/<int:id>',methods=['POST','GET'])
@@ -290,7 +298,7 @@ def tiposproducto():
         datos = cursor.fetchall()
         return render_template('tiposproductos/lis_tiposproductos.html',form=datos) 
 
-@app.route('/tipoproducto/agregar',methods=['POST'])    
+@app.route('/tipoproducto/agregar',methods=['POST','GET'])    
 def tipoproducto_agregar():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -309,6 +317,8 @@ def tipoproducto_agregar():
                 conn.commit()
                 flash("Registro Guardado con Exito") 
             return redirect(url_for('tiposproducto'))
+        else:
+            return render_template('tiposproductos/agr_tiposproducto.html')
 
 @app.route('/tipoproducto/editar/<int:id>',methods=['POST','GET'])
 def tipoproducto_editar(id):
@@ -371,7 +381,7 @@ def productos():
         return render_template('productos/lis_productos.html',productos=productos,tipos=tipos,formas=formas) 
 
 
-@app.route('/producto/agregar',methods=['POST'])    
+@app.route('/producto/agregar',methods=['POST','GET'])    
 def producto_agregar():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -407,7 +417,9 @@ def producto_agregar():
                             + """VALUES (%s, %s, %s, %s, NOW())""",(idproducto,forma,float(precio),float(prima)))                            
                             conn.commit()
                 flash("Registro Guardado con Exito") 
-            return redirect(url_for('productos')) 
+            return redirect(url_for('productos'))
+        else:
+            return render_template('productos/agr_producto.html') 
 
 
 @app.route('/producto/editar/<int:id>',methods=['POST','GET'])
@@ -517,7 +529,7 @@ def proveedores():
         datos = cursor.fetchall()
         return render_template('proveedores/lis_proveedores.html',form=datos)
 
-@app.route('/proveedor/agregar',methods=['POST'])    
+@app.route('/proveedor/agregar',methods=['POST','GET'])    
 def proveedor_agregar():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -540,7 +552,9 @@ def proveedor_agregar():
 	            + """VALUES (%s, %s, %s, %s, %s, %s, 1, NOW())""",(nombre,correo,telefono,dui,nit,direccion))
                 conn.commit()
                 flash("Registro Guardado con Exito") 
-            return redirect(url_for('proveedores'))        
+            return redirect(url_for('proveedores')) 
+        else:
+            return render_template('proveedores/agr_proveedor.html')       
 
 
 @app.route('/proveedor/editar/<int:id>',methods=['POST','GET'])
@@ -605,11 +619,11 @@ def compras():
         productos = cursor.fetchall()
         cursor = conn.cursor()
         cursor.execute("""SELECT TBL_A.id,TBL_A.documento,TBL_A.fecha,TBL_A.proveedor,TBL_B.nombre AS nombre_proveedor,TBL_A.total
-	FROM compras AS TBL_A LEFT JOIN proveedores AS TBL_B ON TBL_A.proveedor = TBL_B.id ;""")
+	    FROM compras AS TBL_A LEFT JOIN proveedores AS TBL_B ON TBL_A.proveedor = TBL_B.id ;""")
         compras = cursor.fetchall()
         return render_template('compras/lis_compras.html',compras=compras,proveedores=proveedores,productos=productos)
 
-@app.route('/compra/agregar',methods=['POST'])    
+@app.route('/compra/agregar',methods=['POST','GET'])    
 def compra_agregar():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -618,13 +632,14 @@ def compra_agregar():
             fecha = request.form['fecha']
             documento = request.form['documento']
             proveedor = request.form['proveedor']
+            totalcom = request.form['totalcom']
             cursor = conn.cursor()
             cursor.execute("SELECT id FROM compras WHERE fecha = %s and documento = %s and proveedor = %s ",(fecha,documento,proveedor))            
             compra = cursor.fetchone()
             if compra == None:           
                                
-                cursor.execute("""INSERT INTO compras(fecha, documento, proveedor, reg_ing)""" 
-	            + """VALUES (%s, %s, %s, NOW())""",(fecha,documento,proveedor))
+                cursor.execute("""INSERT INTO compras(fecha, documento, proveedor,total, reg_ing)""" 
+	            + """VALUES (%s, %s, %s, %s, NOW())""",(fecha,documento,proveedor,totalcom))
                 conn.commit()
 
                 cursor.execute("SELECT id FROM compras WHERE fecha = %s and documento = %s and proveedor = %s ",(fecha,documento,proveedor))           
@@ -635,15 +650,23 @@ def compra_agregar():
                         producto = request.form['producto' + str(i)]
                         cantidad = request.form['cantidad' + str(i)]
                         precio = request.form['precio' + str(i)]
+                        total = request.form['total' + str(i)]
                         if producto != '' and float(cantidad) > 0 and float(precio) > 0.00:
-                            cursor.execute("""INSERT INTO detalle_compra(compra, producto, cantidad, precio, reg_ing)""" 
-                            + """VALUES (%s, %s, %s, %s, NOW())""",(idcompra,producto,cantidad,precio))
+                            cursor.execute("""INSERT INTO detalle_compra(compra, producto, cantidad, precio, total, reg_ing)""" 
+                            + """VALUES (%s, %s, %s, %s, %s, NOW())""",(idcompra,producto,cantidad,precio,float(total)))
                             conn.commit()
                 flash("Registro Guardado con Exito")
             else:
                 flash("Compra ya existe")
                 return redirect(url_for('compras')) 
             return redirect(url_for('compras')) 
+        else:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, nombre FROM proveedores ;")
+            proveedores = cursor.fetchall()
+            cursor.execute("SELECT id, nombre FROM productos ;")
+            productos = cursor.fetchall()
+            return render_template('compras/agr_compra.html',proveedores=proveedores,productos=productos)
 
 @app.route('/compra/editar/<int:id>',methods=['POST','GET'])
 def compra_editar(id):
@@ -655,10 +678,11 @@ def compra_editar(id):
             fecha = request.form['fecha']
             documento = request.form['documento']
             proveedor = request.form['proveedor']
+            totalcom = request.form['totalcom']
             cursor = conn.cursor()           
             cursor.execute("""	UPDATE compras SET
-		    fecha= %s,documento=%s,proveedor=%s,reg_mod=NOW()
-	        WHERE id = %s """,(fecha,documento,proveedor,id))
+		    fecha= %s,documento=%s,proveedor=%s,total=%s,reg_mod=NOW()
+	        WHERE id = %s """,(fecha,documento,proveedor,float(totalcom),id))
             conn.commit()
             idcompra = id
             #numdet = int(request.form['numdet'])
@@ -668,14 +692,15 @@ def compra_editar(id):
                 producto = request.form['producto' + str(i)]
                 cantidad = request.form['cantidad' + str(i)]
                 precio = request.form['precio' + str(i)]
+                total = request.form['total'+ str(i)]
                 if iddet != '' and producto != '' and float(cantidad) > 0 and float(precio) > 0.00:
-                    cursor.execute("""UPDATE detalle_compra SET producto = %s,cantidad = %s,precio = %s,reg_mod = NOW() """ 
-                    + """ WHERE id = %s AND compra = %s ;""",(producto,cantidad,precio,int(iddet),idcompra))
+                    cursor.execute("""UPDATE detalle_compra SET producto = %s,cantidad = %s,precio = %s,reg_mod = NOW() 
+                    ,total=%s WHERE id = %s AND compra = %s ;""",(producto,cantidad,precio,float(total),int(iddet),idcompra))
                     conn.commit()
                 else:
                     if iddet == '' and producto != '' and float(cantidad) > 0 and float(precio) > 0.00:
-                        cursor.execute("""INSERT INTO detalle_compra(compra, producto, cantidad, precio, reg_ing)""" 
-                        + """VALUES (%s, %s, %s, %s, NOW())""",(idcompra,producto,cantidad,precio))
+                        cursor.execute("""INSERT INTO detalle_compra(compra, producto, cantidad, precio, total, reg_ing)""" 
+                        + """VALUES (%s, %s, %s, %s, %s, NOW())""",(idcompra,producto,cantidad,precio,float(total)))
                         conn.commit()
             flash("Registro Actualiazado con Exito")
             return redirect(url_for('compras'))
@@ -688,7 +713,7 @@ def compra_editar(id):
             cursor.execute("""SELECT TBL_A.id,TBL_A.fecha,TBL_A.documento,TBL_A.proveedor,TBL_B.nombre AS nombre_proveedor,TBL_A.total
             FROM compras AS TBL_A LEFT JOIN proveedores AS TBL_B ON TBL_A.proveedor = TBL_B.id  WHERE TBL_A.id = %s ;""",(id))
             compra = cursor.fetchall()
-            cursor.execute("SELECT id,compra, producto, cantidad, precio FROM detalle_compra WHERE compra = %s",(id))
+            cursor.execute("SELECT id,compra, producto, cantidad, precio,total FROM detalle_compra WHERE compra = %s",(id))
             detallecompra = cursor.fetchall()            
             if compra is not None:           
                 return render_template('compras/edi_compra.html',compra=compra,proveedores=proveedores,productos=productos,detallecompra=detallecompra)               
@@ -736,7 +761,7 @@ def consignas():
         return render_template('consignas/lis_consignas.html',consignas=consignas,vendedores=vendedores,productos=productos)
 
 #--- AGREGA CONSIGNA ---#
-@app.route('/consigna/agregar',methods=['POST'])    
+@app.route('/consigna/agregar',methods=['POST','GET'])    
 def consigna_agregar():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -768,7 +793,14 @@ def consigna_agregar():
             else:
                 flash("Consigna ya existe")
                 return redirect(url_for('consignas')) 
-            return redirect(url_for('consignas')) 
+            return redirect(url_for('consignas'))
+        else:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, nombre FROM vendedores ;")
+            vendedores = cursor.fetchall()
+            cursor.execute("SELECT id, nombre FROM productos ;")
+            productos = cursor.fetchall()
+            return render_template('consignas/agr_consigna.html',vendedores=vendedores,productos=productos)            
 
 #--- MODIFICA CONSIGNA ---#
 @app.route('/consigna/editar/<int:id>',methods=['POST','GET'])
@@ -895,7 +927,7 @@ def formaspago():
         return render_template('formaspago/lis_formaspago.html',form=datos) 
 
 #--- NUEVO FORMAPAGO ---#
-@app.route('/formapago/agregar',methods=['POST'])    
+@app.route('/formapago/agregar',methods=['POST','GET'])    
 def formapago_agregar():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -915,6 +947,8 @@ def formapago_agregar():
                 conn.commit()
                 flash("Registro Guardado con Exito") 
             return redirect(url_for('formaspago'))
+        else:
+            return render_template('formaspago/agr_formaspago.html')
 
 #--- MODIFICAR FORMAPAGO ---#
 @app.route('/formapago/editar/<int:id>',methods=['POST','GET'])

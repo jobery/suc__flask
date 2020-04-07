@@ -4,7 +4,7 @@
 {% block cuerpo %}
 <div class="container pt-4">
     <div class="row">
-        <div class="col-md-5">
+        <div class="col-md-6">
             <div class="card-header">Modificar Compra</div>
             {% with mensajes = get_flashed_messages() %}
                 {% if mensajes %}
@@ -28,16 +28,19 @@
                     </div>
                     <div class="form-group">
                         {{ dropdown('proveedor', proveedores,selected=[compra.3], extra=' id="proveedores" required ') }}
-                    </div>  
+                    </div>
+                    <div class="form-group">
+                        <input type="number" step="any" class="form-control" name="totalcom" value="{{ compra.0.5 }}" placeholder="Total Compra" readonly>
+                    </div>                      
 
                     <!--  DETALLE ETIQUETAS -->
                     <div class="form-row" id="detproduc0" >
-                        <div class="col-6">
+                        <div class="col-4">
                             <div class="form-group">
                                 <label for="Producto">Producto</label>
                             </div>
                         </div>
-                        <div class="col-3">
+                        <div class="col-2">
                             <div class="form-group">
                                 <label for="Cantidad">Cantidad</label>
                             </div>
@@ -46,7 +49,12 @@
                             <div class="form-group">
                                 <label for="Precio">Precio</label>
                             </div>
-                        </div>                                               
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <label for="Total">Total</label>
+                            </div>
+                        </div>                                                                        
                     </div>
 
                     <div class="form-group" hidden>
@@ -55,12 +63,12 @@
 
                     {% for detalle in detallecompra %}
                         <div class="form-row" id="detproduc{{loop.index}}" >
-                            <div class="col-6">
+                            <div class="col-4">
                                 <div class="form-group">
-                                    {{ dropdown('producto' + loop.index|string , productos,selected=[detalle.2], extra=' required ') }}
+                                    {{ dropdown('producto' + loop.index|string , productos,selected=[detalle.2], extra=' id="selproducto" required ') }}
                                 </div>                         
                             </div>                        
-                            <div class="col-3">
+                            <div class="col-2">
                                 <div class="form-group">
                                     <input type="number" name="cantidad{{loop.index}}" class="form-control" value="{{ detalle.3 }}" placeholder="Cantidad" required>
                                 </div> 
@@ -69,7 +77,12 @@
                                 <div class="form-group">
                                     <input type="number" step="any" name="precio{{loop.index}}" class="form-control" value="{{ detalle.4 }}" placeholder="Precio" required>
                                 </div> 
-                            </div>                                                
+                            </div>
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <input type="number" step="any" name="total{{loop.index}}" class="form-control" value="{{ detalle.5 }}" placeholder="Total" readonly>
+                                </div> 
+                            </div>                                                                            
                         </div>
                         <div class="form-group" hidden>
                             <input type="number" name="id{{loop.index}}" class="form-control" value="{{ detalle.0 }}" hidden>
@@ -78,24 +91,29 @@
                     {% if detalleprecios|length < 5 %}
                         {% for i in range(1+detallecompra|length,6) %}
                             <div class="form-row" id="detproduc{{i}}" >
-                                <div class="col-6">
+                                <div class="col-4">
                                     <div class="form-group">
-                                        {{ dropdown('producto' + i|string , productos, extra=' ') }}
+                                        {{ dropdown('producto' + i|string , productos, extra=' id="selproducto" ') }}
                                     </div>                         
                                 </div>
-                                <div class="col-3">
+                                <div class="col-2">
                                     <div class="form-group">
-                                        <input type="number" name="cantidad{{i}}" class="form-control" placeholder="Cantidad"  >
+                                        <input type="number" name="cantidad{{i}}" class="form-control" value="0" placeholder="Cantidad">
                                     </div> 
                                 </div>                                                     
                                 <div class="col-3">
                                     <div class="form-group">
-                                        <input type="number" step="any" name="precio{{i}}" class="form-control" placeholder="Precio" >
+                                        <input type="number" step="any" name="precio{{i}}" class="form-control" value="0.00" placeholder="Precio">
                                     </div> 
                                 </div>
                                 <div class="col-3">
                                     <div class="form-group">
-                                        <input type="number" name="id{{i}}" class="form-control" value="TMP" hidden>
+                                        <input type="number" step="any" name="total{{i}}" class="form-control" value="0.00"  placeholder="Total" readonly>
+                                    </div> 
+                                </div>                                
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <input type="number" name="id{{i}}" class="form-control" value="" hidden>
                                     </div> 
                                 </div>                                            
                             </div>                                
@@ -107,4 +125,46 @@
         </div>        
     </div>
 </div>
+{% endblock %}
+{% block script %}
+    
+    $(document).ready(function(){       
+
+        $('input[name=cantidad1],input[name=precio1]').on('change focus Blur',function(){
+            total();            
+        });
+
+        $('input[name=cantidad2],input[name=precio2]').on('change focus Blur',function(){
+            total();          
+        }); 
+        
+        $('input[name=cantidad3],input[name=precio3]').on('change focus Blur',function(){
+            total();         
+        });
+
+        $('input[name=cantidad4],input[name=precio4]').on('change focus Blur',function(){
+            total();         
+        });
+
+        $('input[name=cantidad5],input[name=precio5]').on('change focus Blur',function(){
+            total();         
+        });        
+        
+        function total(){
+            var valor_total = 0.00;                       
+            for (var i = 1; i < 6; i++) {
+                var campc = 'cantidad' + i
+                var campp = 'precio' + i
+                var campt = 'total' + i
+                var total = 0.00;
+                if ($('input[name='+campc+']').val() != 0 || $('input[name='+campp+']').val() != 0) {
+                    total = parseInt($('input[name='+campc+']').val()) * parseFloat($('input[name='+campp+']').val());
+                    valor_total += total;
+                }
+                $('input[name='+campt+']').val(total); 
+             }
+            $('input[name=totalcom]').val(valor_total);
+        }        
+
+    });
 {% endblock %}

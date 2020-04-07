@@ -3,8 +3,7 @@
 {% block cuerpo %}
 <div class="container pt-4">
     <div class="row">
-        <div class="col-md-5">
-            <div class="card-header">Nuevo Proveedor</div>
+        <div class="col-md-12">            
             {% with mensajes = get_flashed_messages() %}
                 {% if mensajes %}
                     {% for mensaje in mensajes %}               
@@ -17,31 +16,24 @@
                     {% endfor %}
                 {% endif %}
             {% endwith %}    
-            <div class="card card-body">            
-                <form action="/proveedor/agregar" method="POST" autocomplete="on">
-                    <div class="form-group">
-                        <input type="text" class="form-control" name="nombre" placeholder="Nombre" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="email" class="form-control" name="correo" placeholder="Correo" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" class="form-control" name="telefono" placeholder="Telefono" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" class="form-control" name="dui" placeholder="Dui" required>
-                    </div>    
-                    <div class="form-group">
-                        <input type="text" class="form-control" name="nit" placeholder="Nit" required>
-                    </div>
-                    <div class="form-group">                        
-                        <textarea class="form-control" name="direccion" rows="3" placeholder="Direccion"></textarea>
-                    </div>                                                                     
-                    <button type="submit" id="sendlogin" class="btn btn-primary btn-block">Guardar</button>
-                </form>
-            </div> 
         </div>
-        <div class="col-md-7">
+        <div class="col-md-12">
+            <div class="form-group">
+                <div class="row">
+                  <div class="col-sm">
+                    <a class="btn btn-success" href="/proveedor/agregar" role="button">Nuevo</a> 
+                  </div>
+                  <div class="col-sm">
+                    <label for="Titulo">Listado de Proveedores</label>
+                  </div>
+                  <div class="col-sm">
+                    <form class="form-inline my-2 my-lg-0">
+                        <input class="form-control mr-sm-2" type="search" placeholder="Buscar" aria-label="Search">
+                        <button class="btn btn-outline-dark my-2 my-sm-0" type="submit">Buscar</button>
+                    </form>
+                  </div>
+                </div>
+            </div>             
             <table class="table table-striped table-boardered table-sm">
                 <thead>
                     <tr>

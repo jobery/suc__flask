@@ -1,0 +1,19 @@
+{% extends 'plantillas/layout.html' %}
+{% block titulo %}Tipos de Productos{% endblock %}
+{% block cuerpo %}
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card-header">Nuevo Tipo de Producto</div>
+            <div class="card card-body">            
+                <form action="/tipoproducto/agregar" method="POST" autocomplete="on">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="nombre" placeholder="Nombre" required>
+                    </div>                                                                     
+                    <button type="submit" id="sendlogin" class="btn btn-primary btn-block">Guardar</button>
+                </form>
+            </div> 
+        </div>
+    </div>
+</div>
+{% endblock %}

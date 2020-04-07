@@ -1,0 +1,66 @@
+{% extends 'plantillas/layout.html' %}
+{% block titulo %}Productos{% endblock %}
+{% block cuerpo %}
+{% from "plantillas/dropdown.html" import dropdown %}
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card-header">Nuevo Producto</div>  
+            <div class="card card-body">            
+                <form action="/producto/agregar" method="POST" autocomplete="on">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="nombre" placeholder="Nombre" required>
+                    </div>
+                    <div class="form-group">
+                        {{ dropdown('tipo', tipos, extra=' required ') }}
+                    </div> 
+                    <div class="form-group">
+                        <input type="number" class="form-control" name="costo" placeholder="Costo" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" class="form-control" name="precio" placeholder="Precio Contado" required>
+                    </div>
+                    <!--  DETALLE ETIQUETAS -->
+                    <div class="form-row" id="detproduc0" >
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label for="Producto">Tipo de Precio</label>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <label for="Cantidad">Precio</label>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group">
+                                <label for="Cantidad">Prima</label>
+                            </div>
+                        </div>                                                                                                
+                    </div>                    
+                    {% for i in range(1,6) %}
+                        <div class="form-row" id="detprecio{{loop.index}}" >
+                            <div class="col-6">
+                                <div class="form-group">
+                                    {{ dropdown('tipoPrecio' + loop.index|string , formas, extra=' required ') }}
+                                </div>                         
+                            </div>
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <input type="number" step="any" name="precio{{loop.index}}" class="form-control" placeholder="Precio"required >
+                                </div> 
+                            </div>                                                     
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <input type="number" step="any" name="prima{{loop.index}}" class="form-control" placeholder="Prima" required>
+                                </div> 
+                            </div>           
+                        </div>
+                    {% endfor %}                                                                    
+                    <button type="submit" id="sendlogin" class="btn btn-primary btn-block">Guardar</button>
+                </form>
+            </div> 
+        </div>
+    </div>
+</div>
+{% endblock %}
