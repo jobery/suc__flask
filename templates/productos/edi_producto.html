@@ -20,6 +20,7 @@
             {% endwith %}    
             <div class="card card-body">            
                 <form action="/producto/editar/{{ producto.0 }}" method="POST" autocomplete="on">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="form-group">
                         <input type="text" class="form-control" name="nombre" value="{{ producto.1 }}" placeholder="Nombre" required>
                     </div>

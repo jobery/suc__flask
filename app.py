@@ -1,5 +1,6 @@
 from flask import Flask,request,render_template,redirect,url_for,session,flash,Response,jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_wtf import CSRFProtect
 import pymysql
 import secrets
 import json 
@@ -11,6 +12,7 @@ app = Flask(__name__)
 conn = pymysql.connect(host='localhost',user='admin',passwd='admin',db='sucursal')
 
 app.config['SECRET_KEY'] = secrets.token_urlsafe(10)
+csrf = CSRFProtect(app)
 
 @app.route('/')
 def inicio():    
@@ -25,7 +27,7 @@ def format_datetime(value,format='%Y-%m-%d'):
     else:
         return value.strftime(format)
 
-app.jinja_env.filters['datetime'] = format_datetime   
+##app.jinja_env.filters['datetime'] = format_datetime   
 
 ###-------------------------------------------------------- INI USUARIO -------------------------------------------------------------###
 @app.route('/signup',methods=['POST','GET'])

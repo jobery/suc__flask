@@ -8,6 +8,7 @@
             <div class="card-header">Nuevo Compra</div>   
             <div class="card card-body">            
                 <form id="form" action="/compra/agregar" method="POST" autocomplete="on">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="form-group">
                         <input type="date" class="form-control" name="fecha" placeholder="Fecha" required>
                     </div>

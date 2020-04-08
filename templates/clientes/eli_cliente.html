@@ -7,6 +7,7 @@
             <div class="card-header">Eiminar Cliente</div>
             <div class="card card-body">
                 <form action="/cliente/eliminar/{{ form.0 }}" method="post">                    
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="form-group">
                     <label for="confirmaeliminacion">¿ Esta Seguro de Eliminar el Cliente {{ form.1 }} ?</label>
                     </div>

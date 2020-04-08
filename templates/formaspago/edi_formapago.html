@@ -19,6 +19,7 @@
             {% endwith %}    
             <div class="card card-body">            
                 <form action="/formapago/editar/{{ form.0 }}" method="POST" autocomplete="on">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="form-group">
                         <input type="text" class="form-control" name="nombre" value="{{ form.1 }}" placeholder="Nombre" required>
                     </div>  

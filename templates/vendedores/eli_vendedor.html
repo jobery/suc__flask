@@ -7,8 +7,9 @@
             <div class="card-header">Eliminar Vendedor</div>
             <div class="card card-body">
                 <form action="/vendedor/eliminar/{{ form.0 }}" method="post">                    
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="form-group">
-                    <label for="confirmaeliminacion">¿ Esta Seguro de Eliminar el Vendedor {{ form.1 }} ?</label>
+                        <label for="confirmaeliminacion">¿ Esta Seguro de Eliminar el Vendedor {{ form.1 }} ?</label>
                     </div>
                     <button type="submit" class="btn btn-danger">Eliminar</button>
                     <a class="btn btn-info" href="/vendedores">Cancelar</a>
