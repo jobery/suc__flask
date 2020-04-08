@@ -40,11 +40,12 @@ def SignUp():
         cursor.execute("SELECT nombre,email FROM usuarios WHERE email = %s ",(email))
         usuario = cursor.fetchone()
         if usuario is not None:           
-            flash("Correo ya Existe")
+            flash("Correo ya Existe","danger")
             return render_template('usuario/reg_usuario.html')
         else:
             cursor.execute("INSERT INTO usuarios(nombre,email,password,reg_ing)values(%s,%s,%s,NOW())",(nombre,email,password))
-            conn.commit()            
+            conn.commit()
+            flash("Usuario Registrado con Exito","success")            
             return redirect(url_for('login'))
     else:
         return render_template('usuario/reg_usuario.html')
@@ -67,7 +68,8 @@ def usuario():
             conn.commit()
             session['logged_in'] = False
             session['nombre'] =  ''
-            session['email'] =  '' 
+            session['email'] =  ''
+            flash("Usuario Actualizado con Exito","success") 
             return redirect(url_for('login'))
         else:
             cursor = conn.cursor()
@@ -90,13 +92,13 @@ def check():
         if session['logged_in'] == False:
             session['nombre'] =  ''
             session['email'] =  ''            
-            flash("Email o Password Incorrectos")
+            flash("Email o Password Incorrectos","warning")
         else:
             session['nombre'] =  usuario[0]
             session['email'] =  email           
         return redirect(url_for('inicio'))
     else:
-        flash("Email o Password Incorrectos")
+        flash("Email o Password Incorrectos","danger")
         session['logged_in'] = False
         session['nombre'] =  ''
         session['email'] =  ''
@@ -137,13 +139,13 @@ def cliente_agregar():
             cursor.execute("SELECT nit FROM clientes WHERE nit = %s ",(nit))            
             cliente = cursor.fetchone()
             if cliente is not None:           
-                flash("Numero de Nit ya existe")
+                flash("Numero de Nit ya existe","danger")
                 redirect(url_for('clientes'))                
             else:
                 cursor.execute("""INSERT INTO clientes(nombre, correo, telefono, dui, nit, direccion, activo, reg_ing)""" 
 	            + """VALUES (%s, %s, %s, %s, %s, %s, 1, NOW())""",(nombre,correo,telefono,dui,nit,direccion))
                 conn.commit()
-                flash("Registro Guardado con Exito") 
+                flash("Registro Guardado con Exito","success") 
             return redirect(url_for('clientes'))
         else:
             return render_template('clientes/agr_clientes.html')
@@ -165,7 +167,7 @@ def cliente_editar(id):
 		    nombre= %s,correo=%s,telefono=%s,dui=%s,nit=%s,direccion=%s,activo=1,reg_mod=NOW()
 	        WHERE id = %s """,(nombre,correo,telefono,dui,nit,direccion,id))
             conn.commit()
-            flash("Registro Actualiazado con Exito")
+            flash("Registro Actualiazado con Exito","success")
             return redirect(url_for('clientes'))
         else:
             cursor.execute("SELECT id, nombre, correo, telefono, dui, nit, direccion FROM clientes WHERE id = %s ;",(id))
@@ -173,7 +175,7 @@ def cliente_editar(id):
             if cliente is not None:           
                 return render_template('clientes/edi_cliente.html',form=cliente)               
             else:
-                flash("Cliente no existe")
+                flash("Cliente no existe","warning")
                 return redirect(url_for('clientes'))
 
 @app.route('/cliente/eliminar/<int:id>',methods=['POST','GET'])
@@ -185,7 +187,7 @@ def cliente_eliminar(id):
         if request.method == 'POST':
             cursor.execute("DELETE FROM clientes WHERE id=%s ",(id))
             conn.commit()        
-            flash("Registro Eliminado con Exito")
+            flash("Registro Eliminado con Exito","danger")
             return redirect(url_for('clientes'))
         else:
             cursor.execute("SELECT id,nombre FROM clientes WHERE id = %s ",(id))
@@ -193,7 +195,7 @@ def cliente_eliminar(id):
             if cliente is not None:
                 return render_template('clientes/eli_cliente.html',form=cliente)
             else:
-                flash("Cliente no existe")
+                flash("Cliente no existe","warning")
                 return redirect(url_for('clientes'))
 
 @app.route('/cliente/buscar',methods=['POST'])  
@@ -228,13 +230,13 @@ def vendedor_agregar():
             cursor.execute("SELECT nit FROM vendedores WHERE nit = %s ",(nit))            
             cliente = cursor.fetchone()
             if cliente is not None:           
-                flash("Numero de Nit ya existe")
+                flash("Numero de Nit ya existe","warning")
                 redirect(url_for('vendedores'))                
             else:
                 cursor.execute("""INSERT INTO vendedores(nombre, correo, telefono, dui, nit, direccion, activo, reg_ing)""" 
 	            + """VALUES (%s, %s, %s, %s, %s, %s, 1, NOW())""",(nombre,correo,telefono,dui,nit,direccion))
                 conn.commit()
-                flash("Registro Guardado con Exito") 
+                flash("Registro Guardado con Exito","success") 
             return redirect(url_for('vendedores'))
         else:
             return render_template('vendedores/agr_vendedor.html')        
@@ -257,7 +259,7 @@ def vendedor_editar(id):
 		    nombre= %s,correo=%s,telefono=%s,dui=%s,nit=%s,direccion=%s,activo=1,reg_mod=NOW()
 	        WHERE id = %s """,(nombre,correo,telefono,dui,nit,direccion,id))
             conn.commit()
-            flash("Registro Actualiazado con Exito")
+            flash("Registro Actualiazado con Exito","success")
             return redirect(url_for('vendedores'))
         else:
             cursor.execute("SELECT id, nombre, correo, telefono, dui, nit, direccion FROM vendedores WHERE id = %s ;",(id))
@@ -265,7 +267,7 @@ def vendedor_editar(id):
             if cliente is not None:           
                 return render_template('vendedores/edi_vendedor.html',form=cliente)               
             else:
-                flash("Vendedor no existe")
+                flash("Vendedor no existe","danger")
                 return redirect(url_for('vendedores'))
 
 
@@ -278,7 +280,7 @@ def vendedor_eliminar(id):
         if request.method == 'POST':
             cursor.execute("DELETE FROM vendedores WHERE id=%s ",(id))
             conn.commit()        
-            flash("Registro Eliminado con Exito")
+            flash("Registro Eliminado con Exito","success")
             return redirect(url_for('vendedores'))
         else:
             cursor.execute("SELECT id,nombre FROM vendedores WHERE id = %s ",(id))
@@ -286,7 +288,7 @@ def vendedor_eliminar(id):
             if cliente is not None:
                 return render_template('vendedores/eli_vendedor.html',form=cliente)
             else:
-                flash("Vendedor no existe")
+                flash("Vendedor no existe","warning")
                 return redirect(url_for('vendedores'))
 ###------------------------------------------FIN VENDEDOR -------------------------------------------------###
 ###------------------------------------------INI TIPOPRODUCTO -------------------------------------------------###
@@ -311,13 +313,13 @@ def tipoproducto_agregar():
             cursor.execute("SELECT nombre FROM tipos_producto WHERE nombre = %s ",(nombre))            
             tipopro = cursor.fetchone()
             if tipopro is not None:           
-                flash("Tipo ya existe")
+                flash("Tipo ya existe","warning")
                 redirect(url_for('tiposproducto'))                
             else:
                 cursor.execute("""INSERT INTO tipos_producto(nombre, reg_ing)""" 
 	            + """VALUES (%s, NOW())""",(nombre))
                 conn.commit()
-                flash("Registro Guardado con Exito") 
+                flash("Registro Guardado con Exito","success") 
             return redirect(url_for('tiposproducto'))
         else:
             return render_template('tiposproductos/agr_tiposproducto.html')
@@ -333,7 +335,7 @@ def tipoproducto_editar(id):
             cursor.execute("""	UPDATE tipos_producto SET nombre= %s,reg_mod=NOW()
 	        WHERE id = %s """,(nombre,id))
             conn.commit()
-            flash("Registro Actualiazado con Exito")
+            flash("Registro Actualiazado con Exito","success")
             return redirect(url_for('tiposproducto'))
         else:
             cursor.execute("SELECT id, nombre FROM tipos_producto WHERE id = %s ;",(id))
@@ -341,7 +343,7 @@ def tipoproducto_editar(id):
             if tipopro is not None:           
                 return render_template('tiposproductos/edi_tiposproducto.html',form=tipopro)               
             else:
-                flash("Tipo no existe")
+                flash("Tipo no existe","warning")
                 return redirect(url_for('tiposproducto'))
 
 
@@ -354,7 +356,7 @@ def tipoproducto_eliminar(id):
         if request.method == 'POST':
             cursor.execute("DELETE FROM tipos_producto WHERE id=%s ",(id))
             conn.commit()        
-            flash("Registro Eliminado con Exito")
+            flash("Registro Eliminado con Exito","success")
             return redirect(url_for('tiposproducto'))
         else:
             cursor.execute("SELECT id,nombre FROM tipos_producto WHERE id = %s ",(id))
@@ -362,7 +364,7 @@ def tipoproducto_eliminar(id):
             if cliente is not None:
                 return render_template('tiposproductos/eli_tiposproducto.html',form=cliente)
             else:
-                flash("Tipo no existe")
+                flash("Tipo no existe","danger")
                 return redirect(url_for('tiposproducto'))
 ###------------------------------------------INI TIPOPRODUCTO -------------------------------------------------###
 ###------------------------------------------INI PRODUCTOS -------------------------------------------------###
@@ -397,7 +399,7 @@ def producto_agregar():
             cursor.execute("SELECT nombre FROM productos WHERE nombre = %s ",(nombre))            
             producto = cursor.fetchone()
             if producto is not None:           
-                flash("Nombre ya existe")
+                flash("Nombre ya existe","warning")
                 redirect(url_for('productos'))                
             else:
                 cursor.execute("""INSERT INTO productos(nombre, tipo, costo, precio, reg_ing)""" 
@@ -418,7 +420,7 @@ def producto_agregar():
                             cursor.execute("""INSERT INTO precios_producto(producto, forma, precio, prima, reg_ing)""" 
                             + """VALUES (%s, %s, %s, %s, NOW())""",(idproducto,forma,float(precio),float(prima)))                            
                             conn.commit()
-                flash("Registro Guardado con Exito") 
+                flash("Registro Guardado con Exito","success") 
             return redirect(url_for('productos'))
         else:
             return render_template('productos/agr_producto.html') 
@@ -457,7 +459,7 @@ def producto_editar(id):
                         cursor.execute("""INSERT INTO precios_producto(producto, forma, precio, prima, reg_ing)""" 
                         + """VALUES (%s, %s, %s, %s, NOW())""",(idproducto,forma,float(precio),float(prima)))                            
                         conn.commit()
-            flash("Registro Actualiazado con Exito")
+            flash("Registro Actualiazado con Exito","success")
             return redirect(url_for('productos'))
         else:
             cursor.execute("SELECT id, nombre FROM tipos_producto ;")
@@ -473,7 +475,7 @@ def producto_editar(id):
             if producto is not None:           
                 return render_template('productos/edi_producto.html',producto=producto,tipos=tipos,formas=formas,detalleprecios=detalleprecios)               
             else:
-                flash("Producto no existe")
+                flash("Producto no existe","danger")
                 return redirect(url_for('productos'))  
 
 
@@ -487,7 +489,7 @@ def producto_eliminar(id):
             cursor.execute("DELETE FROM productos WHERE id = %s ;",(id))
             cursor.execute("DELETE FROM precios_producto WHERE producto = %s ;",(id))
             conn.commit()        
-            flash("Registro Eliminado con Exito")
+            flash("Registro Eliminado con Exito","success")
             return redirect(url_for('productos'))
         else:
             cursor.execute("SELECT id,nombre FROM productos WHERE id = %s ",(id))
@@ -495,7 +497,7 @@ def producto_eliminar(id):
             if cliente is not None:
                 return render_template('productos/eli_producto.html',form=cliente)
             else:
-                flash("Producto no existe")
+                flash("Producto no existe","warning")
                 return redirect(url_for('productos'))
 
 #--- PRODUCTO PRECIO AJAX ---#
@@ -547,13 +549,13 @@ def proveedor_agregar():
             cursor.execute("SELECT nit FROM proveedores WHERE nit = %s ",(nit))            
             cliente = cursor.fetchone()
             if cliente is not None:           
-                flash("Numero de Nit ya existe")
+                flash("Numero de Nit ya existe","warning")
                 redirect(url_for('proveedores'))                
             else:
                 cursor.execute("""INSERT INTO proveedores(nombre, correo, telefono, dui, nit, direccion, activo, reg_ing)""" 
 	            + """VALUES (%s, %s, %s, %s, %s, %s, 1, NOW())""",(nombre,correo,telefono,dui,nit,direccion))
                 conn.commit()
-                flash("Registro Guardado con Exito") 
+                flash("Registro Guardado con Exito","success") 
             return redirect(url_for('proveedores')) 
         else:
             return render_template('proveedores/agr_proveedor.html')       
@@ -576,7 +578,7 @@ def proveedor_editar(id):
 		    nombre= %s,correo=%s,telefono=%s,dui=%s,nit=%s,direccion=%s,activo=1,reg_mod=NOW()
 	        WHERE id = %s """,(nombre,correo,telefono,dui,nit,direccion,id))
             conn.commit()
-            flash("Registro Actualiazado con Exito")
+            flash("Registro Actualiazado con Exito","success")
             return redirect(url_for('proveedores'))
         else:
             cursor.execute("SELECT id, nombre, correo, telefono, dui, nit, direccion FROM proveedores WHERE id = %s ;",(id))
@@ -584,7 +586,7 @@ def proveedor_editar(id):
             if cliente is not None:           
                 return render_template('proveedores/edi_proveedor.html',form=cliente)               
             else:
-                flash("proveedor no existe")
+                flash("proveedor no existe","warning")
                 return redirect(url_for('proveedores'))
 
 
@@ -597,7 +599,7 @@ def proveedor_eliminar(id):
         if request.method == 'POST':
             cursor.execute("DELETE FROM proveedores WHERE id=%s ",(id))
             conn.commit()        
-            flash("Registro Eliminado con Exito")
+            flash("Registro Eliminado con Exito","success")
             return redirect(url_for('proveedores'))
         else:
             cursor.execute("SELECT id,nombre FROM proveedores WHERE id = %s ",(id))
@@ -605,7 +607,7 @@ def proveedor_eliminar(id):
             if cliente is not None:
                 return render_template('proveedores/eli_proveedor.html',form=cliente)
             else:
-                flash("proveedor no existe")
+                flash("proveedor no existe","danger")
                 return redirect(url_for('proveedores'))
 ###------------------------------------------FIN PROVEEDORES ----------------------------------------------###
 ###------------------------------------------INI COMPRAS --------------------------------------------------###
@@ -657,9 +659,9 @@ def compra_agregar():
                             cursor.execute("""INSERT INTO detalle_compra(compra, producto, cantidad, precio, total, reg_ing)""" 
                             + """VALUES (%s, %s, %s, %s, %s, NOW())""",(idcompra,producto,cantidad,precio,float(total)))
                             conn.commit()
-                flash("Registro Guardado con Exito")
+                flash("Registro Guardado con Exito","success")
             else:
-                flash("Compra ya existe")
+                flash("Compra ya existe","warning")
                 return redirect(url_for('compras')) 
             return redirect(url_for('compras')) 
         else:
@@ -704,7 +706,7 @@ def compra_editar(id):
                         cursor.execute("""INSERT INTO detalle_compra(compra, producto, cantidad, precio, total, reg_ing)""" 
                         + """VALUES (%s, %s, %s, %s, %s, NOW())""",(idcompra,producto,cantidad,precio,float(total)))
                         conn.commit()
-            flash("Registro Actualiazado con Exito")
+            flash("Registro Actualiazado con Exito","success")
             return redirect(url_for('compras'))
         else:
             cursor = conn.cursor()
@@ -720,7 +722,7 @@ def compra_editar(id):
             if compra is not None:           
                 return render_template('compras/edi_compra.html',compra=compra,proveedores=proveedores,productos=productos,detallecompra=detallecompra)               
             else:
-                flash("Compra no existe")
+                flash("Compra no existe","warning")
                 return redirect(url_for('compras'))
 
 @app.route('/compra/eliminar/<int:id>',methods=['POST','GET'])
@@ -733,7 +735,7 @@ def compra_eliminar(id):
             cursor.execute("DELETE FROM compras WHERE id = %s ",(id))            
             cursor.execute("DELETE FROM detalle_compra WHERE compra = %s",(id)) 
             conn.commit()       
-            flash("Registro Eliminado con Exito")
+            flash("Registro Eliminado con Exito","success")
             return redirect(url_for('compras'))
         else:
             cursor.execute("SELECT id,documento,fecha FROM compras WHERE id = %s ",(id))
@@ -741,7 +743,7 @@ def compra_eliminar(id):
             if compra is not None:
                 return render_template('compras/eli_compra.html',form=compra)
             else:
-                flash("proveedor no existe")
+                flash("proveedor no existe","warning")
                 return redirect(url_for('compras'))                
 ###------------------------------------------FIN COMPRAS --------------------------------------------------###
 ###------------------------------------------INI CONSIGNAS ------------------------------------------------###
@@ -791,9 +793,9 @@ def consigna_agregar():
                             cursor.execute("""INSERT INTO detalle_consigna(consigna, producto, cantidad, reg_ing)""" 
                             + """VALUES (%s, %s, %s, NOW())""",(idconsigna,producto,cantidad))                            
                             conn.commit()
-                flash("Registro Guardado con Exito")
+                flash("Registro Guardado con Exito","success")
             else:
-                flash("Consigna ya existe")
+                flash("Consigna ya existe","danger")
                 return redirect(url_for('consignas')) 
             return redirect(url_for('consignas'))
         else:
@@ -835,7 +837,7 @@ def consigna_editar(id):
                         cursor.execute("""INSERT INTO detalle_consigna(consigna, producto, cantidad, reg_ing)""" 
                         + """VALUES (%s, %s, %s, NOW())""",(idconsigna,producto,cantidad))                            
                         conn.commit()                                                                             
-            flash("Registro Actualiazado con Exito")
+            flash("Registro Actualiazado con Exito","success")
             return redirect(url_for('consignas'))
         else:
             cursor = conn.cursor()
@@ -851,7 +853,7 @@ def consigna_editar(id):
             if consigna is not None:           
                 return render_template('consignas/edi_consigna.html',consigna=consigna,vendedores=vendedores,productos=productos,detalleconsigna=detalleconsigna)               
             else:
-                flash("Consigna no existe")
+                flash("Consigna no existe","danger")
                 return redirect(url_for('consignas'))
 
 #--- ELIMINAR CONSIGNA ---#
@@ -865,7 +867,7 @@ def consigna_eliminar(id):
             cursor.execute("DELETE FROM consignas WHERE id = %s ",(id))            
             cursor.execute("DELETE FROM detalle_consigna WHERE consigna = %s",(id)) 
             conn.commit()       
-            flash("Registro Eliminado con Exito")
+            flash("Registro Eliminado con Exito","success")
             return redirect(url_for('consignas'))
         else:
             cursor.execute("SELECT id,fecha,vendedor FROM consignas WHERE id = %s ",(id))
@@ -873,7 +875,7 @@ def consigna_eliminar(id):
             if consigna is not None:
                 return render_template('consignas/eli_consigna.html',form=consigna)
             else:
-                flash("Consigna no existe")
+                flash("Consigna no existe","danger")
                 return redirect(url_for('consignas')) 
 
 #--- PROCESAR CONSIGNA ---#
@@ -896,7 +898,7 @@ def consigna_procesar(id):
                         cursor.execute("""UPDATE detalle_consigna SET devolucion = %s,reg_dev = NOW() """ 
                         + """ WHERE id = %s AND consigna = %s ;""",(devolucion,int(iddet),idconsigna))
                         conn.commit()            
-            flash("Registro Procesado con Exito")
+            flash("Registro Procesado con Exito","success")
             return redirect(url_for('consignas'))
         else:
             cursor = conn.cursor()
@@ -913,7 +915,7 @@ def consigna_procesar(id):
             if consigna is not None:           
                 return render_template('consignas/pro_consigna.html',consigna=consigna,vendedores=vendedores,productos=productos,detalleconsigna=detalleconsigna)               
             else:
-                flash("Consigna no existe")
+                flash("Consigna no existe","danger")
                 return redirect(url_for('consignas'))
 ###------------------------------------------FIN CONSIGNAS ------------------------------------------------###
 ###------------------------------------------INI FORMAPAGO -------------------------------------------------###
@@ -941,13 +943,13 @@ def formapago_agregar():
             cursor.execute("SELECT id FROM formas_pago WHERE dias = %s AND nombre = %s ",(dias,nombre))            
             formapago = cursor.fetchone()
             if formapago is not None:           
-                flash("Forma de Pago ya existe")
+                flash("Forma de Pago ya existe","danger")
                 redirect(url_for('formaspago'))                
             else:
                 cursor.execute("""INSERT INTO formas_pago(nombre,dias, reg_ing)""" 
 	            + """VALUES (%s,%s, NOW())""",(nombre,dias))
                 conn.commit()
-                flash("Registro Guardado con Exito") 
+                flash("Registro Guardado con Exito","success") 
             return redirect(url_for('formaspago'))
         else:
             return render_template('formaspago/agr_formaspago.html')
@@ -965,7 +967,7 @@ def formapago_editar(id):
             cursor.execute("""	UPDATE formas_pago SET nombre = %s,dias = %s,reg_mod=NOW()
 	        WHERE id = %s """,(nombre,dias,id))
             conn.commit()
-            flash("Registro Actualiazado con Exito")
+            flash("Registro Actualiazado con Exito","success")
             return redirect(url_for('formaspago'))
         else:
             cursor.execute("SELECT id, nombre,dias FROM formas_pago WHERE id = %s ;",(id))
@@ -973,7 +975,7 @@ def formapago_editar(id):
             if formapago is not None:           
                 return render_template('formaspago/edi_formapago.html',form=formapago)               
             else:
-                flash("Forma de Pago no existe")
+                flash("Forma de Pago no existe","danger")
                 return redirect(url_for('formaspago'))
 
 #--- ELIMINAR FORMAPAGO ---#
@@ -986,7 +988,7 @@ def formapago_eliminar(id):
         if request.method == 'POST':
             cursor.execute("DELETE FROM formas_pago WHERE id = %s ",(id))
             conn.commit()        
-            flash("Registro Eliminado con Exito")
+            flash("Registro Eliminado con Exito","success")
             return redirect(url_for('formaspago'))
         else:
             cursor.execute("SELECT id,nombre,dias FROM formas_pago WHERE id = %s ",(id))
@@ -994,7 +996,7 @@ def formapago_eliminar(id):
             if formapago is not None:
                 return render_template('formaspago/eli_formapago.html',form=formapago)
             else:
-                flash("Forma de Pago no existe")
+                flash("Forma de Pago no existe","danger")
                 return redirect(url_for('formaspago'))
 ###------------------------------------------INI FORMAPAGO -------------------------------------------------###
 ###------------------------------------------INI CXC ------------------------------------------------###
@@ -1028,10 +1030,10 @@ def cxc_consigan(id):
                     seleccion = {"id":id,"iddetalle":iddetalle,"fecha":fecha,"descripcion":consigna[3],"producto":productos[0][0],"nomproducto":productos[0][1],"cantidad":productos[0][2],}                   
                     return render_template('cxc/cxc_det_consigna.html',consigna=consigna,detalleconsigna=detalleconsigna,clientes=clientes,productos=productos,formaspago=formaspago,seleccion=seleccion)
                 else:
-                    flash("Consignacion no Procesada")
+                    flash("Consignacion no Procesada","danger")
                     return redirect(url_for('consignas'))
             else:
-                flash("Consigna no Existe")
+                flash("Consigna no Existe","danger")
                 return redirect((url_for('consignas')))
         else:
             cursor.execute("SELECT id,fecha FROM consignas WHERE id = %s",(id))
@@ -1092,9 +1094,9 @@ def cxc_det_consigna():
                 conn.commit()
 
         else:
-            flash("Por favor Distribuir Cantidad Completa")
+            flash("Por favor Distribuir Cantidad Completa","warning")
             return redirect(url_for('consignas'))                                                                                         
-        flash("Registro Actualiazado con Exito")
+        flash("Registro Actualiazado con Exito","success")
         return redirect(url_for('consignas'))            
             
 #--- CXC AJAX ---#
