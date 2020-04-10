@@ -204,18 +204,13 @@ def cliente_buscar():
         return redirect(url_for('login'))
     else:
         busqueda = request.form['busqueda']
-        print('busqueda:')
-        print(busqueda)
-        print('conn.escape(busqueda):')
-        print(conn.escape(busqueda))
         cursor = conn.cursor() 
         if busqueda != '':  
             cursor.execute(""" SELECT id, nombre, correo, telefono, dui, nit, direccion FROM clientes 
-            WHERE MATCH(nombre,correo,telefono,dui,nit,direccion) AGAINST (%s) ; """,(busqueda))
+            WHERE MATCH(nombre,correo,telefono,dui,nit,direccion) AGAINST (%s) ; """,(conn.escape(busqueda)))
         else:
             cursor.execute("SELECT id, nombre, correo, telefono, dui, nit, direccion FROM clientes ;")            
         resultado = cursor.fetchall()
-        print(jsonify(resultado))
         return jsonify(resultado)     
 
 ###------------------------------------------FIN CLIENTES -------------------------------------------------###
@@ -257,7 +252,6 @@ def vendedor_agregar():
         else:
             return render_template('vendedores/agr_vendedor.html')        
 
-
 @app.route('/vendedor/editar/<int:id>',methods=['POST','GET'])
 def vendedor_editar(id):
     if not session.get('logged_in'):
@@ -286,7 +280,6 @@ def vendedor_editar(id):
                 flash("Vendedor no existe","danger")
                 return redirect(url_for('vendedores'))
 
-
 @app.route('/vendedor/eliminar/<int:id>',methods=['POST','GET'])
 def vendedor_eliminar(id):
     if not session.get('logged_in'):
@@ -306,6 +299,22 @@ def vendedor_eliminar(id):
             else:
                 flash("Vendedor no existe","warning")
                 return redirect(url_for('vendedores'))
+
+#--- VENDEDOR BUSCAR AJAX ---#
+@app.route('/vendedor/buscar',methods=['POST'])  
+def vendedor_buscar():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        busqueda = request.form['busqueda']
+        cursor = conn.cursor() 
+        if busqueda != '':  
+            cursor.execute(""" SELECT id, nombre, correo, telefono, dui, nit, direccion FROM vendedores 
+            WHERE MATCH(nombre,correo,telefono,dui,nit,direccion) AGAINST (%s) ; """,(conn.escape(busqueda)))
+        else:
+            cursor.execute("SELECT id, nombre, correo, telefono, dui, nit, direccion FROM vendedores ;")            
+        resultado = cursor.fetchall()
+        return jsonify(resultado)                 
 ###------------------------------------------FIN VENDEDOR -------------------------------------------------###
 ###------------------------------------------INI TIPOPRODUCTO -------------------------------------------------###
 @app.route('/tiposproducto')
@@ -382,6 +391,22 @@ def tipoproducto_eliminar(id):
             else:
                 flash("Tipo no existe","danger")
                 return redirect(url_for('tiposproducto'))
+
+#--- TIPOS DE PRODUCTO BUSCAR AJAX ---#
+@app.route('/tipoproducto/buscar',methods=['POST'])  
+def tipoproducto_buscar():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        busqueda = request.form['busqueda']        
+        cursor = conn.cursor() 
+        if busqueda != '':  
+            cursor.execute(""" SELECT id, nombre FROM tipos_producto 
+            WHERE MATCH(nombre) AGAINST (%s) ; """,(conn.escape(busqueda)))
+        else:
+            cursor.execute("SELECT id, nombre FROM tipos_producto ;")            
+        resultado = cursor.fetchall()        
+        return jsonify(resultado)  
 ###------------------------------------------INI TIPOPRODUCTO -------------------------------------------------###
 ###------------------------------------------INI PRODUCTOS -------------------------------------------------###
 @app.route('/productos')
@@ -534,9 +559,30 @@ def producto_precio():
             precios = cursor.fetchone()
             if precios is not None:
                 contexto = {'id':idproducto,'precio':str(precios[1])}                  
-    print(contexto)
     reponse = jsonify(contexto)
     return reponse
+
+#--- PRODUCTO BUSCAR AJAX ---#
+@app.route('/producto/buscar',methods=['POST'])  
+def producto_buscar():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        busqueda = request.form['busqueda']
+        cursor = conn.cursor() 
+        if busqueda != '':
+            cursor.execute(""" SELECT productos.id,productos.nombre,productos.tipo,tipos_producto.nombre AS nombre_tipo 
+            ,CAST(productos.costo AS CHAR) AS costo,CAST(productos.precio AS CHAR) AS precio
+            ,CAST(productos.existencia AS CHAR) AS existencia FROM productos LEFT JOIN tipos_producto
+            ON productos.tipo = tipos_producto.id WHERE MATCH(productos.nombre) AGAINST (%s) 
+            OR tipos_producto.nombre LIKE %s ORDER BY productos.id ;""",(conn.escape(busqueda),"%" + busqueda + "%"))              
+        else:
+            cursor.execute(""" SELECT productos.id,productos.nombre,productos.tipo,tipos_producto.nombre AS nombre_tipo
+            ,CAST(productos.costo AS CHAR) AS costo,CAST(productos.precio AS CHAR) AS precio
+            ,CAST(productos.existencia AS CHAR) AS existencia FROM productos LEFT JOIN tipos_producto
+            ON productos.tipo = tipos_producto.id ORDER BY productos.id ;""")            
+        resultado = cursor.fetchall()
+        return jsonify(resultado) 
 ###------------------------------------------FIN PRODUCTOS -------------------------------------------------###
 ###------------------------------------------INI PROVEEDORES ----------------------_------------------------###
 @app.route('/proveedores')
@@ -625,6 +671,22 @@ def proveedor_eliminar(id):
             else:
                 flash("proveedor no existe","danger")
                 return redirect(url_for('proveedores'))
+
+#--- PROVEEDOR BUSCAR AJAX ---#
+@app.route('/proveedor/buscar',methods=['POST'])  
+def proveedor_buscar():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        busqueda = request.form['busqueda']
+        cursor = conn.cursor() 
+        if busqueda != '':  
+            cursor.execute(""" SELECT id, nombre, correo, telefono, dui, nit, direccion FROM proveedores 
+            WHERE MATCH(nombre,correo,telefono,dui,nit,direccion) AGAINST (%s) ; """,(conn.escape(busqueda)))
+        else:
+            cursor.execute("SELECT id, nombre, correo, telefono, dui, nit, direccion FROM proveedores ;")            
+        resultado = cursor.fetchall()
+        return jsonify(resultado) 
 ###------------------------------------------FIN PROVEEDORES ----------------------------------------------###
 ###------------------------------------------INI COMPRAS --------------------------------------------------###
 @app.route('/compras')
@@ -638,8 +700,8 @@ def compras():
         cursor.execute("SELECT id, nombre FROM productos ;")
         productos = cursor.fetchall()
         cursor = conn.cursor()
-        cursor.execute("""SELECT TBL_A.id,TBL_A.documento,TBL_A.fecha,TBL_A.proveedor,TBL_B.nombre AS nombre_proveedor,TBL_A.total
-	    FROM compras AS TBL_A LEFT JOIN proveedores AS TBL_B ON TBL_A.proveedor = TBL_B.id ;""")
+        cursor.execute(""" SELECT TBL_A.id,TBL_A.documento,TBL_A.fecha,TBL_A.proveedor,TBL_B.nombre AS nombre_proveedor,TBL_A.total
+	    FROM compras AS TBL_A LEFT JOIN proveedores AS TBL_B ON TBL_A.proveedor = TBL_B.id ; """)
         compras = cursor.fetchall()
         return render_template('compras/lis_compras.html',compras=compras,proveedores=proveedores,productos=productos)
 
@@ -760,7 +822,26 @@ def compra_eliminar(id):
                 return render_template('compras/eli_compra.html',form=compra)
             else:
                 flash("proveedor no existe","warning")
-                return redirect(url_for('compras'))                
+                return redirect(url_for('compras'))  
+
+#--- COMPRAS BUSCAR AJAX ---#
+@app.route('/compra/buscar',methods=['POST'])  
+def compra_buscar():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        busqueda = request.form['busqueda']
+        cursor = conn.cursor() 
+        if busqueda != '':  
+            cursor.execute(""" SELECT TBL_A.id,TBL_A.documento,CAST(TBL_A.fecha AS CHAR) AS fecha,TBL_A.proveedor,TBL_B.nombre AS nombre_proveedor
+            ,CAST(TBL_A.total AS CHAR) AS total FROM compras AS TBL_A LEFT JOIN proveedores AS TBL_B ON TBL_A.proveedor = TBL_B.id 
+            WHERE MATCH(TBL_A.documento) AGAINST (%s) OR TBL_A.fecha LIKE %s 
+            OR TBL_B.nombre LIKE %s ; """,(conn.escape(busqueda),"%"+busqueda+"%","%"+busqueda+"%"))
+        else:
+            cursor.execute(""" SELECT TBL_A.id,TBL_A.documento,CAST(TBL_A.fecha AS CHAR) AS fecha,TBL_A.proveedor,TBL_B.nombre AS nombre_proveedor
+            ,CAST(TBL_A.total AS CHAR) AS total FROM compras AS TBL_A LEFT JOIN proveedores AS TBL_B ON TBL_A.proveedor = TBL_B.id ;""")            
+        resultado = cursor.fetchall()
+        return jsonify(resultado) 
 ###------------------------------------------FIN COMPRAS --------------------------------------------------###
 ###------------------------------------------INI CONSIGNAS ------------------------------------------------###
 #--- LISTAR CONSIGNA ---#
@@ -775,7 +856,7 @@ def consignas():
         cursor.execute("SELECT id, nombre FROM productos ;")
         productos = cursor.fetchall()
         cursor = conn.cursor()
-        cursor.execute("""SELECT TBL_A.id,TBL_A.fecha,TBL_A.vendedor,TBL_B.nombre AS nombre_vendedor,TBL_A.total
+        cursor.execute(""" SELECT TBL_A.id,TBL_A.fecha,TBL_A.vendedor,TBL_B.nombre AS nombre_vendedor,TBL_A.total
 	    ,IF(TBL_A.procesado=1,'SI','NO') AS procesado FROM consignas AS TBL_A LEFT JOIN vendedores AS TBL_B ON TBL_A.vendedor = TBL_B.id ;""")
         consignas = cursor.fetchall()
         return render_template('consignas/lis_consignas.html',consignas=consignas,vendedores=vendedores,productos=productos)
@@ -933,6 +1014,26 @@ def consigna_procesar(id):
             else:
                 flash("Consigna no existe","danger")
                 return redirect(url_for('consignas'))
+
+#--- CONSIGNAS BUSCAR AJAX ---#
+@app.route('/consigna/buscar',methods=['POST'])  
+def consigna_buscar():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        busqueda = request.form['busqueda']
+        cursor = conn.cursor() 
+        if busqueda != '':  
+            cursor.execute(""" SELECT TBL_A.id,CAST(TBL_A.fecha AS CHAR) AS fecha,TBL_A.vendedor,TBL_B.nombre AS nombre_vendedor
+            ,CAST(TBL_A.total AS CHAR) AS total,IF(TBL_A.procesado=1,'SI','NO') AS procesado FROM consignas AS TBL_A 
+            LEFT JOIN vendedores AS TBL_B ON TBL_A.vendedor = TBL_B.id 
+            WHERE TBL_A.fecha LIKE %s OR TBL_B.nombre LIKE %s ; """,("%"+busqueda+"%","%"+busqueda+"%"))
+        else:
+            cursor.execute(""" SELECT TBL_A.id,CAST(TBL_A.fecha AS CHAR) AS fecha,TBL_A.vendedor,TBL_B.nombre AS nombre_vendedor
+            ,CAST(TBL_A.total AS CHAR) AS total,IF(TBL_A.procesado=1,'SI','NO') AS procesado FROM consignas AS TBL_A 
+            LEFT JOIN vendedores AS TBL_B ON TBL_A.vendedor = TBL_B.id ; """)            
+        resultado = cursor.fetchall()
+        return jsonify(resultado)                 
 ###------------------------------------------FIN CONSIGNAS ------------------------------------------------###
 ###------------------------------------------INI FORMAPAGO -------------------------------------------------###
 #--- LISTADO FORMAPAGO ---#
@@ -1014,6 +1115,22 @@ def formapago_eliminar(id):
             else:
                 flash("Forma de Pago no existe","danger")
                 return redirect(url_for('formaspago'))
+
+#--- FORMAS DE PAGO BUSCAR AJAX ---#
+@app.route('/formapago/buscar',methods=['POST'])  
+def formapago_buscar():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        busqueda = request.form['busqueda']
+        cursor = conn.cursor() 
+        if busqueda != '':  
+            cursor.execute(""" SELECT id,nombre,dias FROM formas_pago 
+            WHERE MATCH(nombre) AGAINST (%s) ; """,(conn.escape(busqueda)))
+        else:
+            cursor.execute("SELECT id,nombre,dias FROM formas_pago ;")            
+        resultado = cursor.fetchall()
+        return jsonify(resultado) 
 ###------------------------------------------INI FORMAPAGO -------------------------------------------------###
 ###------------------------------------------INI CXC ------------------------------------------------###
 #--- CXC CONSIGNA ---#
