@@ -1,9 +1,8 @@
-from flask import Flask,request,render_template,redirect,url_for,session,flash,Response,jsonify
+from flask import Flask,request,render_template,redirect,url_for,session,flash,Response,jsonify,escape
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import CSRFProtect
 import pymysql
 import secrets
-import json 
 
 from datetime import datetime
 
@@ -198,9 +197,26 @@ def cliente_eliminar(id):
                 flash("Cliente no existe","warning")
                 return redirect(url_for('clientes'))
 
+#--- CLIENTE BUSCAR AJAX ---#
 @app.route('/cliente/buscar',methods=['POST'])  
 def cliente_buscar():
-    return redirect(url_for('clientes'))
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    else:
+        busqueda = request.form['busqueda']
+        print('busqueda:')
+        print(busqueda)
+        print('conn.escape(busqueda):')
+        print(conn.escape(busqueda))
+        cursor = conn.cursor() 
+        if busqueda != '':  
+            cursor.execute(""" SELECT id, nombre, correo, telefono, dui, nit, direccion FROM clientes 
+            WHERE MATCH(nombre,correo,telefono,dui,nit,direccion) AGAINST (%s) ; """,(busqueda))
+        else:
+            cursor.execute("SELECT id, nombre, correo, telefono, dui, nit, direccion FROM clientes ;")            
+        resultado = cursor.fetchall()
+        print(jsonify(resultado))
+        return jsonify(resultado)     
 
 ###------------------------------------------FIN CLIENTES -------------------------------------------------###
 ###------------------------------------------INI VENDEDOR -------------------------------------------------###

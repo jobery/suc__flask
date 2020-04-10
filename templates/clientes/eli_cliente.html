@@ -9,7 +9,7 @@
                 <form action="/cliente/eliminar/{{ form.0 }}" method="post">                    
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="form-group">
-                    <label for="confirmaeliminacion">¿ Esta Seguro de Eliminar el Cliente {{ form.1 }} ?</label>
+                        <label for="confirmaeliminacion">¿ Esta Seguro de Eliminar el Cliente {{ form.1 }} ?</label>
                     </div>
                     <button type="submit" class="btn btn-danger">Eliminar</button>
                     <a class="btn btn-info" href="/clientes">Cancelar</a>
