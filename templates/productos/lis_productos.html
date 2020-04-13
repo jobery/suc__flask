@@ -5,18 +5,7 @@
 <div class="container pt-4">
     <div class="row">
         <div class="col-md-12">
-            {% with mensajes = get_flashed_messages(with_categories=true) %}
-                {% if mensajes %}
-                    {% for categoria,mensaje in mensajes %}               
-                        <div class="alert alert-{{ categoria }} alert-dismissible fade show" role="alert">
-                            {{ mensaje }}
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}    
+            {% include 'plantillas/flash.html' %}  
         </div>          
         <div class="col-md-12">
             <div class="form-group">
