@@ -88,12 +88,15 @@ def usuario():
 
 @app.route('/check',methods=['POST'])
 def check():
+    e_mail = str(request.form['email'])
+    recordar  = "recordar" in request.form
     if 'cor' in request.cookies:
         email = request.cookies.get('cor')                        
     else:        
-        email = str(request.form['email'])        
-    password = str(request.form['password'])
-    recordar  = "recordar" in request.form
+        email = str(request.form['email'])
+    if e_mail != email:
+        email = e_mail
+    password = str(request.form['password'])    
     cursor = conn.cursor()
     cursor.execute("SELECT nombre,password FROM usuarios WHERE email = %s ",(email))
     usuario = cursor.fetchone()    
@@ -106,7 +109,7 @@ def check():
         else:
             session['nombre'] =  usuario[0]
             session['email'] =  email 
-            if recordar:
+            if recordar:                
                 reponse = make_response(redirect(url_for('inicio')))          
                 reponse.set_cookie('cor',email,max_age=COOKIE_TIME_OUT)            
                 reponse.set_cookie('rec','on',max_age=COOKIE_TIME_OUT)
@@ -119,9 +122,6 @@ def check():
         return redirect(url_for('inicio'))
     else:
         flash("Email o Password Incorrectos","danger")
-        #session['logged_in'] = False
-        #session['nombre'] =  ''
-        #session['email'] =  ''
         session.pop('logged_in',None)
         session.pop('nombre',None)
         session.pop('email',None)
