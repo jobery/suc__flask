@@ -1,10 +1,10 @@
-from flask import Flask,request,render_template,redirect,url_for,session,flash,Response,jsonify,escape
+from flask import Flask,request,render_template,redirect,url_for,session,flash,Response,jsonify,escape,make_response
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import CSRFProtect
 import pymysql
 import secrets
 
-from datetime import datetime
+from datetime import datetime,timedelta
 
 app = Flask(__name__)
 
@@ -12,6 +12,13 @@ conn = pymysql.connect(host='localhost',user='admin',passwd='admin',db='sucursal
 
 app.config['SECRET_KEY'] = secrets.token_urlsafe(10)
 csrf = CSRFProtect(app)
+
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=10)
+
+global COOKIE_TIME_OUT
+COOKIE_TIME_OUT = 60 * 5
+
+
 
 @app.route('/')
 def inicio():    
@@ -81,8 +88,12 @@ def usuario():
 
 @app.route('/check',methods=['POST'])
 def check():
-    email = str(request.form['email'])
+    if 'cor' in request.cookies:
+        email = request.cookies.get('cor')                        
+    else:        
+        email = str(request.form['email'])        
     password = str(request.form['password'])
+    recordar  = "recordar" in request.form
     cursor = conn.cursor()
     cursor.execute("SELECT nombre,password FROM usuarios WHERE email = %s ",(email))
     usuario = cursor.fetchone()    
@@ -94,13 +105,26 @@ def check():
             flash("Email o Password Incorrectos","warning")
         else:
             session['nombre'] =  usuario[0]
-            session['email'] =  email           
+            session['email'] =  email 
+            if recordar:
+                reponse = make_response(redirect(url_for('inicio')))          
+                reponse.set_cookie('cor',email,max_age=COOKIE_TIME_OUT)            
+                reponse.set_cookie('rec','on',max_age=COOKIE_TIME_OUT)
+                return reponse
+            else:
+                reponse = make_response(redirect(url_for('inicio')))          
+                reponse.set_cookie('cor','',max_age=0)            
+                reponse.set_cookie('rec','off',max_age=0)
+                return reponse
         return redirect(url_for('inicio'))
     else:
         flash("Email o Password Incorrectos","danger")
-        session['logged_in'] = False
-        session['nombre'] =  ''
-        session['email'] =  ''
+        #session['logged_in'] = False
+        #session['nombre'] =  ''
+        #session['email'] =  ''
+        session.pop('logged_in',None)
+        session.pop('nombre',None)
+        session.pop('email',None)
         return redirect(url_for('inicio'))
 
 @app.route('/salir')
