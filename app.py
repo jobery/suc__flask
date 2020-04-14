@@ -129,10 +129,10 @@ def check():
 
 @app.route('/salir')
 def cerrar():
-    session['logged_in'] = False
-    session['nombre'] =  ''
-    session['email'] =  ''     
-    return redirect(url_for('inicio'))
+    session.pop('logged_in',None)
+    session.pop('nombre',None)
+    session.pop('email',None)    
+    return redirect(url_for('login'))
 
 ###-------------------------------------------------------- FIN USUARIO -------------------------------------------------------------###
 ###--------------------------------------INICIO CLIENTES -------------------------------------------------###
